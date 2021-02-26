@@ -1,0 +1,7 @@
+---
+- name: terminate instances
+  ec2_instance:
+    region: "{{ aws_region }}"
+    state: absent
+    filters:
+      "tag:env": "aws_ansible_k8s"

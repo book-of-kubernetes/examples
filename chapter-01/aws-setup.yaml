@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    aws_instances:
+      ch01-host01:
+        type: master
+        ip: 172.31.1.1
+        instance_type: t3.medium
+  roles:
+    - aws-k8s

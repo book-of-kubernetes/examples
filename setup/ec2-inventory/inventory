@@ -1,0 +1,26 @@
+# This file exists to turn the dynamic AWS groups into simplified names for
+# the playbook.yaml and the group_vars dir.
+
+# First, add explicit localhost to get rid of the warning when there are no
+# AWS EC2 hosts yet. 
+localhost
+
+# Now, declare the dynamic groups so Ansible knows they exist.
+[tag_type_master]
+
+[tag_type_node]
+
+# Give those dynamic groups a friendlier name by creating parent groups around
+# them.
+
+[masters:children]
+tag_type_master
+
+[nodes:children]
+tag_type_node
+
+# Finally, configure SSH for AWS servers.
+[aws_ec2:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_user=ubuntu
+ansible_ssh_private_key_file={{ playbook_dir }}/../sshkeys/id_rsa_aws_ansible_k8s

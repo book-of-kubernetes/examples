@@ -1,0 +1,5 @@
+---
+collections:
+  - name: amazon.aws
+  - name: community.aws
+  - name: community.crypto

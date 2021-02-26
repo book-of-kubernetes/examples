@@ -1,0 +1,10 @@
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+filters:
+  tag:env: aws_ansible_k8s
+keyed_groups:
+  - key: tags.type
+    prefix: tag_type
+hostnames:
+  - ip-address

@@ -1,0 +1,4 @@
+---
+- hosts: aws_ec2
+  tasks:
+    - ping:

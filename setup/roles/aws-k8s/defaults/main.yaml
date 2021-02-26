@@ -1,0 +1,7 @@
+---
+aws_region: us-east-1
+aws_subnet_az: us-east-1d
+aws_private_cidr: 172.31.0.0/16
+aws_key: aws_ansible_k8s
+aws_ubuntu_ami: ami-024a64a6685d05041
+aws_k8s_teardown: false
