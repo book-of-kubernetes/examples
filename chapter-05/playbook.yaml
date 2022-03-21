@@ -1,0 +1,34 @@
+---
+- hosts: remote
+  become: yes
+  roles:
+    - tools
+    - docker-ce
+    - docker-registry
+    - cri-o
+    - crictl
+- hosts: remote
+  become: yes
+  tasks:
+    - name: files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt
+        owner: root
+        group: root
+        mode: '0644'
+        directory_mode: '0755'
+      with_list:
+        - busybox-container.yaml
+        - busybox-pod.yaml
+        - hello
+    - name: scripts
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt
+        owner: root
+        group: root
+        mode: '0755'
+      with_list:
+        - busybox.sh
+        - stop-busybox.sh

@@ -1,0 +1,9 @@
+---
+- include: setup.yaml
+  when: not aws_k8s_teardown
+
+- include: teardown.yaml
+  when: aws_k8s_teardown
+
+- include: delete.yaml
+  when: aws_k8s_teardown and aws_k8s_delete

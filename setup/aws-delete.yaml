@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    aws_k8s_teardown: true
+    aws_k8s_delete: true
+  roles:
+    - aws-instances

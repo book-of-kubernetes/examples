@@ -1,0 +1,32 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+cluster = {
+  "host01" => { :ip => "192.168.61.11", :cpus => 2, :mem => 2048 },
+  "host02" => { :ip => "192.168.61.12", :cpus => 1, :mem => 1024 }
+}
+last = "host02"
+groups = {
+  "remote" => ["host01","host02"]
+}
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/focal64"
+  cluster.each do |name, data|
+    config.vm.define name do |host|
+      host.vm.hostname = name
+      host.vm.network "private_network", ip: "#{data[:ip]}"
+      host.vm.provider :virtualbox do |vb, override|
+        vb.cpus = data[:cpus]
+        vb.memory = data[:mem]
+      end
+      # Provision all hosts at once for efficiency
+      if name == last
+        host.vm.provision :ansible do |ansible|
+          ansible.limit = "all"
+          ansible.playbook = "playbook.yaml"
+          ansible.groups = groups
+        end
+      end
+    end
+  end
+end

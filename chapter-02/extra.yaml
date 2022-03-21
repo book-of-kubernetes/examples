@@ -1,0 +1,7 @@
+---
+- hosts: remote
+  become: yes
+  roles:
+    - containerd
+    - cri-o
+    - crictl

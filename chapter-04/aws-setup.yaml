@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    aws_instances:
+      host01:
+        type: master
+        ip: 192.168.61.11
+        instance_type: t3.medium
+      host02:
+        type: master
+        ip: 192.168.61.12
+        instance_type: t3.micro
+  roles:
+    - aws-instances

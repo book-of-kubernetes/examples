@@ -1,0 +1,11 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: todo-db
+spec:
+  selector:
+    app: todo-db
+  ports:
+  - protocol: TCP
+    port: 5432

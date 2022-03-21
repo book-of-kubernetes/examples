@@ -1,0 +1,29 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: todo
+  labels:
+    app: todo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: todo
+  template:
+    metadata:
+      labels:
+        app: todo
+    spec:
+      containers:
+      - name: todo
+        image: alanhohn/todo:{{ todo_version }}
+        imagePullPolicy: Always
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PREFIX
+          value: "/todo"
+        - name: DATABASE_URL
+          value: "postgres://todo:todo@todo-db/todo"
+        ports:
+        - containerPort: 5000

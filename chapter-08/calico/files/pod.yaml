@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+spec:
+  containers:
+  - name: pod
+    image: busybox
+    command: 
+      - "sleep"
+      - "infinity"
+  nodeName: host01

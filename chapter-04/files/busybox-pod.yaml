@@ -1,0 +1,4 @@
+---
+metadata:
+  name: busybox
+  namespace: crio

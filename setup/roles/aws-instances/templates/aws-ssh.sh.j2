@@ -1,0 +1,21 @@
+#!/bin/bash
+HOST=$1
+case $HOST in
+{% for instance in aws_ec2_instance_data %}
+
+  {{ instance[0] }})
+    IP={{ instance[1] }}
+    ;;
+{% endfor %}
+
+  *)
+    echo "Usage: ./aws-ssh.sh <host>"
+    echo "  Valid hosts: {{ aws_instances.keys() | join(', ') }}"
+    exit 1
+    ;;
+
+esac
+
+ssh_args="-o UserKnownHostsFile=../sshkeys/known_hosts_aws_ansible_k8s"
+ssh_args+=" -i ../sshkeys/id_rsa_aws_ansible_k8s"
+ssh $ssh_args ubuntu@$IP

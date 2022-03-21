@@ -1,0 +1,4 @@
+---
+crictl_container_engine: containerd
+crictl_version: v1.20.0
+crictl_url: https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl_version }}/crictl-{{ crictl_version }}-linux-amd64.tar.gz

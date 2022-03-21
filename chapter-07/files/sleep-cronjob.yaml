@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sleep
+spec:
+  schedule: "0 3 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sleep
+            image: busybox
+            command: 
+              - "/bin/sleep"
+              - "30"
+          restartPolicy: OnFailure

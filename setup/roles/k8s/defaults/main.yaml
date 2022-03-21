@@ -1,0 +1,7 @@
+---
+k8s_allow_scheduling_masters: false
+k8s_longhorn_version: 1.2.4
+k8s_version: 1.23.4
+k8s_network: calico
+metrics_server_version: 3.8.2
+ingress_version: 1.1.1

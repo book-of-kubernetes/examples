@@ -1,0 +1,19 @@
+---
+- hosts: remote
+  become: yes
+  roles:
+    - tools
+- hosts: remote
+  become: yes
+  tasks:
+    - name: files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0644'
+      with_list:
+        - container.yaml
+        - crictl.yaml
+        - pod.yaml

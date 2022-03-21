@@ -1,0 +1,21 @@
+---
+- name: download
+  ansible.builtin.get_url:
+    url: "{{ k3s_url }}"
+    dest: /usr/local/bin/k3s
+    mode: '0755'
+
+- name: service file
+  ansible.builtin.copy:
+    src: k3s.service
+    dest: /etc/systemd/system/k3s.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: service
+  ansible.builtin.systemd:
+    name: k3s
+    state: started
+    enabled: yes
+    daemon_reload: yes

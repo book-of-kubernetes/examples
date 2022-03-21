@@ -1,0 +1,4 @@
+---
+metadata:
+  name: nginx1
+  namespace: crio

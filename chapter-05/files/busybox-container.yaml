@@ -1,0 +1,8 @@
+---
+metadata:
+  name: busybox
+image:
+  image: registry.local/busybox:latest
+args:
+  - "/bin/sleep"
+  - "36000"

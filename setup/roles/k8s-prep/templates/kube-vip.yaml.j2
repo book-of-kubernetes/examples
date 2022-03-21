@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-vip
+  namespace: kube-system
+spec:
+  containers:
+  - name: kube-vip
+    image: ghcr.io/kube-vip/kube-vip:v0.3.8
+    imagePullPolicy: Always
+    args:
+    - manager
+    env:
+    - name: vip_arp
+      value: "false"
+    - name: vip_interface
+      value: lo
+    - name: port
+      value: "6443"
+    - name: vip_cidr
+      value: "32"
+    - name: cp_enable
+      value: "true"
+    - name: cp_namespace
+      value: kube-system
+    - name: vip_ddns
+      value: "false"
+    - name: svc_enable
+      value: "true"
+    - name: vip_startleader
+      value: "false"
+    - name: vip_addpeerstolb
+      value: "true"
+    - name: vip_localpeer
+      value: {{ inventory_hostname }}:{{ ansible_facts['all_ipv4_addresses'] | intersect(k8s_cluster_ips) | join('') }}:10000
+    - name: bgp_enable
+      value: "true"
+    - name: bgp_routerid
+      value: {{ ansible_facts['all_ipv4_addresses'] | intersect(k8s_cluster_ips) | join('') }}
+    - name: bgp_as
+      value: "65000"
+    - name: bgp_peeraddress
+    - name: bgp_peerpass
+    - name: bgp_peeras
+      value: "65000"
+    - name: bgp_peers
+      value: {{ k8s_cluster_ips | join(':65000::false,') }}:65000::false
+    - name: vip_address
+      value: {{ k8s_control_plane_endpoint }}
+    securityContext:
+      capabilities:
+        add:
+        - NET_ADMIN
+        - NET_RAW
+        - SYS_TIME
+    volumeMounts:
+    - mountPath: /etc/kubernetes/admin.conf
+      name: kubeconfig
+  hostNetwork: true
+  volumes:
+  - hostPath:
+      path: /etc/kubernetes/admin.conf
+    name: kubeconfig

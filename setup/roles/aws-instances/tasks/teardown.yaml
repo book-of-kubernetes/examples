@@ -1,0 +1,21 @@
+---
+- name: terminate instances
+  community.aws.ec2_instance:
+    region: "{{ aws_region }}"
+    state: absent
+    filters:
+      "tag:env": "aws_ansible_k8s"
+
+- name: delete load balancer
+  community.aws.elb_network_lb:
+    region: "{{ aws_region }}"
+    name: ansible-k8s
+    state: absent
+  when: aws_lb is defined
+
+- name: delete target groups
+  community.aws.elb_target_group:
+    name: "ansible-k8s-{{ item.name }}"
+    state: absent
+  with_list: "{{ aws_lb.ports }}"
+  when: aws_lb is defined

@@ -1,0 +1,21 @@
+---
+- name: prerequisites
+  apt:
+    name: apt-transport-https
+    update_cache: yes
+
+- name: gpg key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: repository
+  ansible.builtin.apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu focal stable
+    state: present
+    filename: docker
+
+- name: install
+  apt:
+    name: docker-ce
+    update_cache: yes

@@ -1,0 +1,8 @@
+#!/bin/bash
+echo "Running command locally"
+eval $@
+for host in {{ k8s_cluster_ips | reject("eq", k8s_initial_master) | join(' ') }}
+do
+  echo "Running command on $host"
+  ssh -T -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa_k8s_all root@${host} $@
+done

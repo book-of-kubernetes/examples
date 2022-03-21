@@ -1,0 +1,8 @@
+{% if crictl_container_engine == 'crio' %}
+runtime-endpoint: unix:///var/run/crio/crio.sock
+image-endpoint: unix:///var/run/crio/crio.sock
+{% else %}
+runtime-endpoint: unix:///var/run/containerd/containerd.sock
+image-endpoint: unix:///var/run/containerd/containerd.sock
+{% endif %}
+timeout: 10

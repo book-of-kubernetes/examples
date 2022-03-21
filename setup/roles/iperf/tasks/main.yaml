@@ -1,0 +1,22 @@
+---
+- name: install
+  apt:
+    name: iperf3
+    update_cache: yes
+
+- name: service file
+  ansible.builtin.copy:
+    src: iperf.service
+    dest: /etc/systemd/system/iperf.service
+    owner: root
+    group: root
+    mode: '0644'
+  when: iperf_server
+
+- name: service
+  ansible.builtin.systemd:
+    name: iperf
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  when: iperf_server

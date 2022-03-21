@@ -1,0 +1,3 @@
+---
+crio_cni: true
+crictl_container_engine: crio

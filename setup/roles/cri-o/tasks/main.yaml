@@ -1,0 +1,51 @@
+---
+- name: gpg key
+  ansible.builtin.apt_key:
+    url: "{{ crio_repo }}/{{ crio_os }}/Release.key"
+    state: present
+
+- name: kubic repository
+  ansible.builtin.apt_repository:
+    repo: "deb {{ crio_repo }}/{{ crio_os }}/ /"
+    state: present
+    filename: kubic
+
+- name: cri-o repository
+  ansible.builtin.apt_repository:
+    repo: "deb {{ crio_repo }}:/cri-o:/{{ crio_version }}/{{ crio_os }}/ /"
+    state: present
+    filename: kubic.cri-o
+
+- name: install
+  ansible.builtin.apt:
+    name:
+      - cri-o
+      - cri-o-runc
+    update_cache: yes
+
+- name: skopeo
+  ansible.builtin.apt:
+    name: skopeo
+  when: crio_skopeo
+
+- name: service
+  ansible.builtin.service:
+    name: crio
+    state: started
+    enabled: yes
+
+- name: cni plugins
+  ansible.builtin.unarchive:
+    src: "{{ cni_plugin_url }}"
+    dest: /opt/cni/bin
+    remote_src: yes
+  when: crio_cni
+
+- name: cni config
+  ansible.builtin.copy:
+    src: 100-crio-bridge.conf
+    dest: /etc/cni/net.d/100-crio-bridge.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when: crio_cni

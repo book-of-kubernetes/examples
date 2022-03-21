@@ -1,0 +1,9 @@
+---
+metadata:
+  name: stress1
+  namespace: crio
+linux:
+  cgroup_parent: pod.slice
+  security_context:
+    namespace_options:
+      network: 2

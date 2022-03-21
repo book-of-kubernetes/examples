@@ -1,0 +1,14 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: todo-data
+spec:
+{% if todo_storageclass is defined %}
+  storageClassName: {{ todo_storageclass }}
+{% endif %}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

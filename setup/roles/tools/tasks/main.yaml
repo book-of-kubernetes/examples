@@ -1,0 +1,7 @@
+---
+- name: install
+  apt:
+    name: 
+      - jq
+      - tmux
+    update_cache: yes

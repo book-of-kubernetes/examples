@@ -1,0 +1,53 @@
+---
+- name: registry host
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.3\.1'
+    line: 127.0.3.1 registry.local
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: key
+  community.crypto.openssl_privatekey:
+    path: /etc/ssl/private/registry.pem
+
+- name: csr
+  community.crypto.openssl_csr:
+    path: /etc/ssl/certs/registry.csr
+    privatekey_path: /etc/ssl/private/registry.pem
+    common_name: registry
+
+- name: certificate
+  community.crypto.x509_certificate:
+    path: /etc/ssl/certs/registry.crt
+    privatekey_path: /etc/ssl/private/registry.pem
+    csr_path: /etc/ssl/certs/registry.csr
+    provider: selfsigned
+
+- name: docker trust dir
+  ansible.builtin.file:
+    path: /etc/docker/certs.d/registry.local
+    state: directory
+    mode: '0755'
+
+- name: docker trust cert
+  ansible.builtin.copy:
+    src: /etc/ssl/certs/registry.crt
+    dest: /etc/docker/certs.d/registry.local/ca.crt
+    remote_src: yes
+
+- name: service file
+  ansible.builtin.copy:
+    src: docker-registry.service
+    dest: /etc/systemd/system/docker-registry.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: service
+  ansible.builtin.systemd:
+    name: docker-registry
+    state: started
+    enabled: yes
+    daemon_reload: yes

@@ -1,0 +1,21 @@
+defaults
+    timeout connect 10s
+    timeout client 30s
+    timeout server 30s
+    log global
+
+{% for name, config in haproxy_config.items() %}
+frontend {{ name }}-front
+    bind *:{{ config['port'] }}
+    option tcplog
+    mode tcp
+    default_backend {{ name }}-back
+
+backend {{ name }}-back
+    mode tcp
+    balance roundrobin
+{% for ip in config['backends'] %}
+    server {{ ip }} {{ ip }}:{{ config['targetPort'] }} check
+{% endfor %}
+
+{% endfor %}

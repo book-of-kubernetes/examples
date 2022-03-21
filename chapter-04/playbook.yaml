@@ -1,0 +1,40 @@
+---
+- hosts: remote
+  become: yes
+  roles:
+    - tools
+    - cri-o
+    - crictl
+- hosts: remote
+  become: yes
+  tasks:
+    - name: bridge utils
+      ansible.builtin.apt:
+        name: bridge-utils
+        update_cache: yes
+    - name: files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0644'
+      with_list:
+        - nginx1-pod.yaml
+        - nginx1-container.yaml
+        - nginx2-pod.yaml
+        - nginx2-container.yaml
+        - busybox-pod.yaml
+        - busybox-container.yaml
+    - name: scripts
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0755'
+      with_list:
+        - nginx.sh
+        - stop-nginx.sh
+        - busybox.sh
+        - stop-busybox.sh

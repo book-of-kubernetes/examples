@@ -1,0 +1,21 @@
+[Unit]
+Description=Docker Registry
+After=docker.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=root
+ExecStart=docker run --name registry \
+  -v /etc/ssl:/certs \
+  -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/certs/registry.crt \
+  -e REGISTRY_HTTP_TLS_KEY=/certs/private/registry.pem \
+  -p 443:443 \
+  registry:2
+ExecStop=docker rm -f registry
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,41 @@
+---
+- name: prerequisites
+  apt:
+    name: python3-pip
+    update_cache: yes
+
+- name: python prerequisites
+  pip:
+    name: openshift
+
+- name: deploy
+  community.kubernetes.k8s:
+    state: present
+    namespace: default
+    template: "{{ item }}"
+    kubeconfig: "{{ todo_kubeconfig }}"
+  loop:
+    - pvc.yaml.j2
+    - database.yaml.j2
+    - database-service.yaml.j2
+    - application.yaml.j2
+    - application-service.yaml.j2
+    - ingress.yaml.j2
+  when: todo_deploy
+  retries: 10
+  register: result
+  until: result is successful
+
+- name: stage for deploy
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: /opt/todo-{{ item }}
+    mode: '0644'
+  loop:
+    - pvc.yaml
+    - database.yaml
+    - database-service.yaml
+    - application.yaml
+    - application-service.yaml
+    - ingress.yaml
+  when: not todo_deploy

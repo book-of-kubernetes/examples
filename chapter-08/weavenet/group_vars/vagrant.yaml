@@ -1,0 +1,3 @@
+---
+k8s_kube_vip: true
+k8s_flannel_iface: enp0s8

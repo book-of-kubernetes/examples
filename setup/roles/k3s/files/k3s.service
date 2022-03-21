@@ -1,0 +1,14 @@
+[Unit]
+Description=k3s
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=root
+ExecStart=/usr/local/bin/k3s server
+
+[Install]
+WantedBy=multi-user.target

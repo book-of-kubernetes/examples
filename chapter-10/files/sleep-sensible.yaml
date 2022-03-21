@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sleep
+spec:
+  containers:
+  - name: sleep
+    image: busybox
+    command: 
+      - "/bin/sleep"
+      - "3600"
+    resources:
+      requests:
+        cpu: "100m"
+  - name: sleep2
+    image: busybox
+    command: 
+      - "/bin/sleep"
+      - "3600"
+    resources:
+      requests:
+        cpu: "100m"

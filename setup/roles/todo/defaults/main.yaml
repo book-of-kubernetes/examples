@@ -1,0 +1,4 @@
+---
+todo_kubeconfig: "/etc/rancher/k3s/k3s.yaml"
+todo_version: 1.0.1
+todo_deploy: true

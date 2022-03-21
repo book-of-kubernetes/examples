@@ -1,0 +1,21 @@
+---
+- hosts: masters
+  become: yes
+  roles:
+    - tools
+    - containerd
+    - crictl
+    - k8s-prep
+    - k8s
+- hosts: remote
+  become: yes
+  tasks:
+    - name: files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0644'
+      with_list:
+        - two-pods.yaml

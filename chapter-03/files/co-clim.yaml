@@ -1,0 +1,14 @@
+---
+metadata:
+  name: stress1
+image:
+  image: docker.io/alanhohn/stress:latest
+args:
+  - "/usr/local/bin/stress"
+  - "--cpu"
+  - "1"
+  - "-v"
+linux:
+  resources:
+    cpu_period: 100000
+    cpu_quota: 10000 

@@ -1,0 +1,28 @@
+{% for ifacename in ansible_interfaces %}
+{%   set ifacevar = 'ansible_' + ifacename %}
+{%   if 'ipv4' in hostvars[inventory_hostname][ifacevar] %}
+{%   set addr = hostvars[inventory_hostname][ifacevar]['ipv4']['address'] %}
+{%   for host in keepalived_hosts %}
+{%     if addr == host['ip'] %}
+vrrp_instance VI_1 {
+    state MASTER
+    interface {{ ifacename }}
+    virtual_router_id {{ keepalived_router_id }}
+    priority {{ host['priority'] }}
+    advert_int 1
+    virtual_ipaddress {
+        {{ keepalived_vip }}
+    }
+    unicast_src_ip {{ addr }}
+    unicast_peer {
+{%    for ip in keepalived_hosts %}
+{%      if ip['ip'] != addr %}
+        {{ ip['ip'] }}
+{%      endif %}
+{%    endfor %}
+    }
+}
+{%     endif %}
+{%   endfor %}
+{%   endif %}
+{% endfor %}

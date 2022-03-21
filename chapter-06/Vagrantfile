@@ -1,0 +1,45 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+cluster = {
+  "host01" => { :ip => "192.168.61.11", :cpus => 2, :mem => 2048, :ports => [80, 48080] },
+  "host02" => { :ip => "192.168.61.12", :cpus => 2, :mem => 2048 },
+  "host03" => { :ip => "192.168.61.13", :cpus => 2, :mem => 2048 },
+  "host04" => { :ip => "192.168.61.14", :cpus => 2, :mem => 2048 }
+}
+last = "host04"
+groups = {
+  "vagrant" => ["host01","host02","host03","host04"],
+  "remote" => ["host01","host02","host03","host04"],
+  "masters" => ["host01","host02","host03"],
+  "nodes" => ["host04"]
+}
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/focal64"
+  cluster.each do |name, data|
+    config.vm.define name do |host|
+      host.vm.hostname = name
+      if data.key?(:ports)
+        host.vm.network "forwarded_port", guest: data[:ports][0], host: data[:ports][1]
+      end
+      host.vm.network "private_network", ip: "#{data[:ip]}"
+      host.vm.provider :virtualbox do |vb, override|
+        vb.cpus = data[:cpus]
+        vb.memory = data[:mem]
+      end
+      # Provision all hosts at once for efficiency
+      if name == last
+        host.vm.provision :ansible do |ansible|
+          ansible.limit = "all"
+          ansible.playbook = "playbook.yaml"
+          ansible.groups = groups
+        end
+        config.vm.provision "extra", type: "ansible", run: "never" do |ansible|
+          ansible.limit = "all"
+          ansible.playbook = "extra.yaml"
+          ansible.groups = groups
+        end
+      end
+    end
+  end
+end

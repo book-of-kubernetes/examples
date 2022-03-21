@@ -1,0 +1,5 @@
+---
+- hosts: masters:nodes
+  become: yes
+  roles:
+    - k8s

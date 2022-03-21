@@ -1,0 +1,5 @@
+---
+metadata:
+  name: nginx1
+image:
+  image: docker.io/library/nginx:latest

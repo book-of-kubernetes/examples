@@ -1,0 +1,8 @@
+---
+- hosts: masters:nodes
+  become: yes
+  roles:
+    - tools
+    - containerd
+    - crictl
+    - k8s-prep

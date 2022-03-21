@@ -1,0 +1,19 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: crasher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crasher
+  template:
+    metadata:
+      labels:
+        app: crasher
+    spec:
+      containers:
+      - name: crasher
+        image: alanhohn/crasher:1.0
+

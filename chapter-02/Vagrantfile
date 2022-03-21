@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+cluster = {
+  "host01" => { :ip => "192.168.61.11", :cpus => 2, :mem => 2048 }
+}
+groups = {
+  "remote" => ["host01"]
+}
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/focal64"
+  cluster.each do |name, data|
+    config.vm.define name do |host|
+      host.vm.hostname = name
+      host.vm.network "private_network", ip: "#{data[:ip]}"
+      host.vm.provider :virtualbox do |vb, override|
+        vb.cpus = data[:cpus]
+        vb.memory = data[:mem]
+      end
+    end
+  end
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "playbook.yaml"
+    ansible.groups = groups
+  end
+  config.vm.provision "extra", type: "ansible", run: "never" do |ansible|
+    ansible.playbook = "extra.yaml"
+    ansible.groups = groups
+  end
+end
