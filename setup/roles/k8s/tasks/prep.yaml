@@ -1,0 +1,127 @@
+---
+- name: ssh key directory
+  ansible.builtin.file:
+    path: /root/.ssh
+    state: directory
+    mode: '0700'
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+
+- name: ssh key
+  community.crypto.openssh_keypair:
+    path: /root/.ssh/id_rsa_k8s_all
+    comment: k8s_all_key
+    regenerate: full_idempotence
+  register: k8s_all_ssh_key
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+
+- name: distribute ssh public key
+  ansible.builtin.set_fact:
+    k8s_all_public_key: "{{ hostvars | json_query('*.k8s_all_ssh_key.public_key') | select() | join('') }}"
+
+- name: ssh authorized key
+  ansible.posix.authorized_key:
+    user: root
+    state: present
+    key: "{{ k8s_all_public_key }}"
+  when: k8s_initial_master not in ansible_facts['all_ipv4_addresses']
+
+- name: version specifier
+  ansible.builtin.template:
+    src: k8s-ver.j2
+    dest: "/opt/k8sver"
+    mode: '0644'
+
+- name: script
+  ansible.builtin.template:
+    src: k8s-all.j2
+    dest: "/usr/local/bin/k8s-all"
+    mode: '0755'
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+
+- name: kubernetes manifests directory
+  ansible.builtin.file:
+    path: /etc/kubernetes/manifests
+    state: directory
+    mode: '0755'
+
+- name: kubernetes components directory
+  ansible.builtin.file:
+    path: /etc/kubernetes/components
+    state: directory
+    mode: '0755'
+
+- name: kubeadm init config
+  ansible.builtin.template:
+    src: kubeadm-init.yaml.j2
+    dest: /etc/kubernetes/kubeadm-init.yaml
+    mode: '0600'
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+
+- name: kubeadm join config
+  ansible.builtin.template:
+    src: kubeadm-join.yaml.j2
+    dest: /etc/kubernetes/kubeadm-join.yaml
+    mode: '0600'
+  when: k8s_initial_master not in ansible_facts['all_ipv4_addresses']
+
+- name: kube-vip config
+  ansible.builtin.template:
+    src: kube-vip.yaml.j2
+    dest: /etc/kubernetes/manifests/kube-vip.yaml
+    mode: '0644'
+  when:
+    - k8s_kube_vip
+    - "'masters' in group_names"
+
+- name: calico config
+  ansible.builtin.template:
+    src: calico-custom-resources.yaml.j2
+    dest: /etc/kubernetes/components/custom-resources.yaml
+    mode: '0644'
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_network == 'calico'
+
+- name: flannel config
+  ansible.builtin.template:
+    src: flannel.yaml.j2
+    dest: /etc/kubernetes/components/flannel.yaml
+    mode: '0644'
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_network == 'flannel'
+
+- name: weave config
+  ansible.builtin.template:
+    src: weave.yaml.j2
+    dest: /etc/kubernetes/components/weave.yaml
+    mode: '0644'
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_network == 'weave'
+
+- name: ingress controller patch
+  ansible.builtin.template:
+    src: ingress-patch.yaml.j2
+    dest: /etc/kubernetes/components/ingress-patch.yaml
+    mode: '0644'
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+
+- name: postgresql operator manifests
+  ansible.builtin.template:
+    src: postgres/{{ item }}.j2
+    dest: /etc/kubernetes/components/{{ item }}
+    mode: '0644'
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_postgresql_operator != "none"
+  loop:
+    - operatorconfiguration.crd.yaml
+    - postgresql-operator-default-configuration.yaml
+    - operator-service-account-rbac.yaml
+    - postgres-operator.yaml
+
+- name: configure kubectl
+  ansible.builtin.copy:
+    content: 'export KUBECONFIG=/etc/kubernetes/admin.conf'
+    dest: /etc/profile.d/02-kubeconfig.sh

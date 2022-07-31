@@ -1,0 +1,31 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: iperf-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: iperf-server
+  template:
+    metadata:
+      labels:
+        app: iperf-server
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - iperf-server
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: iperf
+        image: bookofkubernetes/iperf3:1.0.0
+        env:
+        - name: IPERF_SERVER
+          value: "1"

@@ -1,4 +1,10 @@
 ---
-todo_kubeconfig: "/etc/rancher/k3s/k3s.yaml"
-todo_version: 1.0.1
-todo_deploy: true
+todo_kubeconfig: /etc/kubernetes/admin.conf
+todo_version: 1.0.2
+todo_replicas: 3
+todo_prefix: /todo
+todo_namespace: todo
+todo_postgres_operator: false
+todo_ingress: true
+todo_stage: false
+todo_scaler: false

@@ -34,7 +34,7 @@ Vagrant.configure("2") do |config|
           ansible.playbook = "playbook.yaml"
           ansible.groups = groups
         end
-        config.vm.provision "extra", type: "ansible", run: "never" do |ansible|
+        host.vm.provision "extra", type: "ansible", run: "never" do |ansible|
           ansible.limit = "all"
           ansible.playbook = "extra.yaml"
           ansible.groups = groups

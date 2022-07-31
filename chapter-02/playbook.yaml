@@ -15,5 +15,5 @@
         mode: '0644'
       with_list:
         - container.yaml
-        - crictl.yaml
+        - crio-ver
         - pod.yaml

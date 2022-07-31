@@ -6,6 +6,11 @@ metadata:
     app: todo
 spec:
   replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 30%
+      maxSurge: 50%
   selector:
     matchLabels:
       app: todo
@@ -16,14 +21,50 @@ spec:
     spec:
       containers:
       - name: todo
-        image: alanhohn/todo:{{ todo_version }}
-        imagePullPolicy: Always
+        image: bookofkubernetes/todo:{{ todo_version }}
         env:
         - name: NODE_ENV
-          value: "production"
+          value: production
         - name: PREFIX
-          value: "/todo"
-        - name: DATABASE_URL
-          value: "postgres://todo:todo@todo-db/todo"
+          value: {{ todo_prefix }}
+        - name: PGHOST
+          value: todo-db
+        - name: PGDATABASE
+          value: todo
+{% if todo_postgres_operator %}
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: todo.todo-db.credentials.postgresql.acid.zalan.do
+              key: username
+              optional: false
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: todo.todo-db.credentials.postgresql.acid.zalan.do
+              key: password
+              optional: false
+{% else %}
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: todo-db
+              key: POSTGRES_USER
+              optional: false
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: todo-db
+              key: POSTGRES_PASSWORD
+              optional: false
+{% endif %}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "50m"
         ports:
-        - containerPort: 5000
+        - name: web
+          containerPort: 5000

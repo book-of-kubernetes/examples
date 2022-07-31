@@ -2,9 +2,8 @@
 metadata:
   name: stress2
 image:
-  image: docker.io/alanhohn/stress:latest
+  image: docker.io/bookofkubernetes/stress:latest
 args:
-  - "/usr/local/bin/stress"
   - "--vm"
   - "1"
   - "--vm-bytes"

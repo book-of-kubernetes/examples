@@ -1,0 +1,42 @@
+#!/bin/bash
+POD=$1
+if [ -z "${POD}" ]
+then
+  echo "Usage: cgroup-info <pod name>"
+  exit 1
+fi
+
+# Look up the pod ID from the POD. -q ensures we just return the ID.
+POD_ID=$(crictl pods --name ${POD} -q)
+if [ -z "${POD_ID}" ]
+then
+  echo "Pod ${POD} not found"
+  exit 2
+fi
+
+# Get the pod data in JSON format and pull out one field, the cgroup dir
+cgp_field='.info.config.linux.cgroup_parent'
+CGP=$(crictl inspectp $POD_ID | jq -r "$cgp_field")
+
+# The same cgroup dir is used for both CPU and memory cgroups
+CPU=/sys/fs/cgroup/cpu/$CGP
+MEM=/sys/fs/cgroup/memory/$CGP
+
+# Print our findings
+echo ""
+echo "Container Runtime"
+echo "-----------------"
+echo Pod ID: $POD_ID
+echo Cgroup path: $CGP
+echo ""
+
+echo "CPU Settings"
+echo "------------"
+echo "CPU Shares:" $(cat $CPU/cpu.shares)
+echo "CPU Quota (us):" $(cat $CPU/cpu.cfs_quota_us) "per" $(cat $CPU/cpu.cfs_period_us)
+echo ""
+
+echo "Memory Settings"
+echo "---------------"
+echo "Limit (bytes):" $(cat $MEM/memory.limit_in_bytes)
+echo ""

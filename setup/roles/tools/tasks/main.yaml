@@ -4,4 +4,5 @@
     name: 
       - jq
       - tmux
+      - unzip
     update_cache: yes

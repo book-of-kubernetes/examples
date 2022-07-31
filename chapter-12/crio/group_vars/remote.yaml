@@ -1,0 +1,16 @@
+---
+crictl_container_engine: crio
+k8s_control_plane_endpoint: 192.168.61.10
+k8s_initial_master: 192.168.61.11
+k8s_cluster_ips:
+  - 192.168.61.11
+  - 192.168.61.12
+  - 192.168.61.13
+  - 192.168.61.14
+
+k8s_allow_scheduling_masters: true
+
+# NOTE: In a production system, you should keep these in an encrypted store
+#       such as Ansible Vault.
+k8s_join_token: 1d8fb1.2875d52d62a3282d
+k8s_certificate_key: 5a7e07816958efb97635e9a66256adb1

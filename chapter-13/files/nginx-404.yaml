@@ -1,0 +1,10 @@
+---
+spec:
+  template:
+    spec:
+      containers:
+      - name: nginx
+        livenessProbe:
+          exec:
+            command: ["/usr/bin/curl", "-fq", "http://localhost/missing"]
+

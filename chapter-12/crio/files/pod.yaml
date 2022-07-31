@@ -1,0 +1,12 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: debug
+spec:
+  containers:
+  - name: debug
+    image: alpine
+    command: 
+      - "/bin/sleep"
+      - "infinity"

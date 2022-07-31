@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: needed
+spec:
+  containers:
+  - name: needed
+    image: busybox
+    command: ["/bin/sleep", "infinity"]
+    resources:
+      limits:
+        memory: "64Mi"
+        cpu: "250m"
+  priorityClassName: essential

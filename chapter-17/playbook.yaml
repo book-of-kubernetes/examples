@@ -1,0 +1,26 @@
+---
+- hosts: masters
+  become: yes
+  roles:
+    - tools
+    - containerd
+    - crictl
+    - k8s
+- hosts: remote
+  become: yes
+  tasks:
+    - name: files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0644'
+      with_list:
+        - crd.yaml
+        - pgsql.yaml
+        - sample-reader.yaml
+        - sa.yaml
+        - somedata.yaml
+        - watch.py
+        - watch.yaml

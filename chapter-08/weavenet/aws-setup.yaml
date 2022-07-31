@@ -8,7 +8,7 @@
       ports:
       - name: ingress
         source: 80
-        target: 32766
+        target: 80
       - name: api
         source: 6443
         target: 6443

@@ -5,7 +5,6 @@
     - tools
     - containerd
     - crictl
-    - k8s-prep
     - k8s
 - hosts: remote
   become: yes

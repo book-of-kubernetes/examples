@@ -8,34 +8,96 @@
   pip:
     name: openshift
 
-- name: deploy
-  community.kubernetes.k8s:
+- name: manifests directory
+  ansible.builtin.file:
+    path: /etc/kubernetes/todo
+    state: directory
+    mode: '0755'
+  when: 
+    - todo_stage
+
+- name: stage manifests
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: /etc/kubernetes/todo/{{ item }}
+    mode: '0644'
+  when: 
+    - todo_stage
+  loop:
+    - database.yaml
+    - application.yaml
+    - service.yaml
+    - scaler.yaml
+
+- name: deploy database using operator
+  kubernetes.core.k8s:
     state: present
-    namespace: default
+    namespace: "{{ todo_namespace }}"
+    template: database.yaml.j2
+    kubeconfig: "{{ todo_kubeconfig }}"
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - todo_postgres_operator
+  retries: 10
+  delay: 30
+  register: result
+  until: result is successful
+
+- name: deploy database directly
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ todo_namespace }}"
     template: "{{ item }}"
     kubeconfig: "{{ todo_kubeconfig }}"
   loop:
     - pvc.yaml.j2
-    - database.yaml.j2
+    - database-secret.yaml.j2
+    - database-deploy.yaml.j2
     - database-service.yaml.j2
-    - application.yaml.j2
-    - application-service.yaml.j2
-    - ingress.yaml.j2
-  when: todo_deploy
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - not todo_postgres_operator
   retries: 10
   register: result
   until: result is successful
 
-- name: stage for deploy
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: /opt/todo-{{ item }}
-    mode: '0644'
+- name: deploy application
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ todo_namespace }}"
+    template: "{{ item }}"
+    kubeconfig: "{{ todo_kubeconfig }}"
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
   loop:
-    - pvc.yaml
-    - database.yaml
-    - database-service.yaml
-    - application.yaml
-    - application-service.yaml
-    - ingress.yaml
-  when: not todo_deploy
+    - application.yaml.j2
+    - service.yaml.j2
+  retries: 10
+  register: result
+  until: result is successful
+
+- name: deploy scaler
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ todo_namespace }}"
+    template: scaler.yaml.j2
+    kubeconfig: "{{ todo_kubeconfig }}"
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - todo_scaler
+  retries: 10
+  register: result
+  until: result is successful
+
+- name: deploy ingress
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ todo_namespace }}"
+    template: ingress.yaml.j2
+    kubeconfig: "{{ todo_kubeconfig }}"
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - todo_ingress
+  retries: 10
+  register: result
+  until: result is successful

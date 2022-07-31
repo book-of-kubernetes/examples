@@ -2,7 +2,8 @@
 collections:
   - name: amazon.aws
   - name: ansible.posix
+  - name: cloud.common
   - name: community.aws
   - name: community.crypto
   - name: community.general
-  - name: community.kubernetes
+  - name: kubernetes.core

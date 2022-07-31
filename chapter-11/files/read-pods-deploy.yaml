@@ -1,0 +1,21 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: read-pods
+  namespace: sample
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: read-pods
+  template:
+    metadata:
+      labels:
+        app: read-pods
+    spec:
+      containers:
+      - name: read-pods
+        image: alpine
+        command: ["/bin/sleep", "infinity"]
+      serviceAccountName: read-pods

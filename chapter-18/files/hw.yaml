@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sleep
+spec:
+  containers:
+  - name: sleep
+    image: busybox
+    command: ["/bin/sleep", "infinity"]
+    resources:
+      limits:
+        bookofkubernetes.com/special-hw: 1

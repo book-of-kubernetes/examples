@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: sample-quota
+  namespace: sample
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 256Mi
+    limits.cpu: "2"
+    limits.memory: 512Mi

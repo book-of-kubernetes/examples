@@ -1,0 +1,6 @@
+export VERSION=1.20
+export OS=xUbuntu_20.04
+export ROOT=https://download.opensuse.org/repositories
+export REPO=$ROOT/devel:/kubic:/libcontainers:/stable
+
+export CRICTL_URL=https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.20.0/crictl-v1.20.0-linux-amd64.tar.gz

@@ -1,0 +1,19 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: pgsql-cluster
+  namespace: default
+spec:
+  teamId: "pgsql"
+  volume:
+    size: 1Gi
+    storageClass: longhorn
+  numberOfInstances: 3
+  users:
+    dbuser:
+    - superuser
+    - createdb
+  databases:
+    defaultdb: dbuser
+  postgresql:
+    version: "14"

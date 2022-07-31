@@ -1,0 +1,35 @@
+---
+- hosts: masters
+  become: yes
+  roles:
+    - tools
+    - containerd
+    - crictl
+    - k8s
+- hosts: remote
+  become: yes
+  tasks:
+    - name: files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0644'
+      with_list:
+        - best-effort.yaml
+        - burstable.yaml
+        - essential.yaml
+        - guaranteed.yaml
+        - lots.yaml
+        - needed.yaml
+    - name: scripts
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0755'
+      with_list:
+        - cgroup-info
+        - oom-info

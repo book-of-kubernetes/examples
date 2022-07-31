@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-db
+  labels:
+    app: todo-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-db
+  template:
+    metadata:
+      labels:
+        app: todo-db
+    spec:
+      containers:
+      - name: todo-db
+        image: postgres:14
+        envFrom:
+        - secretRef:
+            name: todo-db
+        env:
+        - name: PGDATA
+          value: "/data/pgdata"
+        volumeMounts:
+        - mountPath: /data
+          name: todo-data
+      volumes:
+        - name: todo-data
+          persistentVolumeClaim:
+           claimName: todo-data

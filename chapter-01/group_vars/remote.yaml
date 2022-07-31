@@ -1,2 +1,5 @@
 ---
+k8s_initial_master: 192.168.61.11
 kubeconfig: /etc/rancher/k3s/k3s.yaml
+todo_kubeconfig: "{{ kubeconfig }}"
+todo_namespace: default

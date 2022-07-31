@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: guaranteed
+spec:
+  containers:
+  - name: guaranteed
+    image: busybox
+    command: ["/bin/sleep", "infinity"]
+    resources:
+      limits:
+        memory: "64Mi"
+        cpu: "50m"
+  nodeName: host01

@@ -1,0 +1,2 @@
+evictionHard:
+  memory.available: "900Mi"

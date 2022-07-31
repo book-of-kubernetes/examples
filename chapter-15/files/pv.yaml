@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: manual
+spec:
+  claimRef:
+    name: manual
+    namespace: default
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 100Mi
+  csi:
+    driver: driver.longhorn.io
+    volumeHandle: manual
+

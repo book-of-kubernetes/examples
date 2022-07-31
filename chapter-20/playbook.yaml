@@ -1,0 +1,76 @@
+---
+- hosts: remote
+  become: yes
+  roles:
+    - tools
+    - containerd
+    - crictl
+    - k8s
+- hosts: remote
+  become: yes
+  tasks:
+    - name: Waiting 3m for cluster to stabilize
+      pause:
+        minutes: 3
+- hosts: remote
+  become: yes
+  roles:
+    - todo
+- hosts: remote
+  become: yes
+  tasks:
+    - name: files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0644'
+      with_list:
+        - rbac.yaml
+        - svc-mon.yaml
+    - name: scripts
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0755'
+      with_list:
+        - api-metrics.sh
+        - install-kube-prometheus.sh
+- hosts: aws_ec2
+  tasks:
+    - debug:
+        msg:
+          - 'Welcome to the chapter Application Resiliency!'
+          - ''
+          - 'The todo application will take a few minutes to start.'
+          - 'Once it is running, it can be reached at:'
+          - "http://{{ inventory_hostname }}:5000/"
+          - ''
+          - 'The book provides instructions for deploying kube-prometheus, which'
+          - 'includes Promethus, Grafana, and other tools. Once it is deployed,'
+          - 'you can access Prometheus and Grafana.'
+          - ''
+          - "Access Grafana at: http://{{ inventory_hostname }}:3000"
+          - "Access Prometheus at: http://{{ inventory_hostname }}:9090"
+
+      when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+- hosts: vagrant
+  tasks:
+    - debug:
+        msg:
+          - 'Welcome to the chapter Application Resiliency!'
+          - ''
+          - 'The todo application will take a few minutes to start.'
+          - 'Once it is running, it can be reached at:'
+          - 'http://localhost:5000/'
+          - ''
+          - 'The book provides instructions for deploying kube-prometheus, which'
+          - 'includes Promethus, Grafana, and other tools. Once it is deployed,'
+          - 'you can access Prometheus and Grafana.'
+          - ''
+          - 'Access Grafana at: http://localhost:3000'
+          - 'Access Prometheus at: http://localhost:9090'
+      when: k8s_initial_master in ansible_facts['all_ipv4_addresses']

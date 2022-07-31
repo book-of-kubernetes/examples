@@ -1,0 +1,15 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx
+data:
+  index.html: |
+    <html>
+      <head>
+        <title>Hello World</title>
+      </head>
+      <body>
+        <h1>Hello, World from a ConfigMap!</h1>
+      </body>
+    </html>

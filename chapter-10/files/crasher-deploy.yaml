@@ -15,5 +15,5 @@ spec:
     spec:
       containers:
       - name: crasher
-        image: alanhohn/crasher:1.0
+        image: bookofkubernetes/crasher:stable
 

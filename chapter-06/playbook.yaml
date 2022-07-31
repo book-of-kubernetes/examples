@@ -1,8 +1,10 @@
 ---
 - hosts: masters:nodes
   become: yes
+  vars:
+    k8s_install: false
   roles:
     - tools
     - containerd
     - crictl
-    - k8s-prep
+    - k8s

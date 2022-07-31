@@ -1,33 +1,18 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
 metadata:
   name: todo-db
-  labels:
-    app: todo-db
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: todo-db
-  template:
-    metadata:
-      labels:
-        app: todo-db
-    spec:
-      containers:
-      - name: todo-db
-        image: postgres:12
-        env:
-        - name: POSTGRES_USER
-          value: todo
-        - name: POSTGRES_PASSWORD
-          value: todo
-        - name: PGDATA
-          value: "/data/pgdata"
-        volumeMounts:
-        - mountPath: /data
-          name: todo-data
-      volumes:
-        - name: todo-data
-          persistentVolumeClaim:
-           claimName: todo-data
+  teamId: todo
+  volume:
+    size: 1Gi
+    storageClass: longhorn
+  numberOfInstances: 3
+  users:
+    todo:
+    - superuser
+    - createdb
+  databases:
+    todo: todo
+  postgresql:
+    version: "14"

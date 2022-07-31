@@ -1,0 +1,111 @@
+apiVersion: "acid.zalan.do/v1"
+kind: OperatorConfiguration
+metadata:
+  name: postgresql-operator-default-configuration
+  namespace: {{ k8s_postgresql_operator_namespace }}
+configuration:
+  docker_image: registry.opensource.zalan.do/acid/spilo-14:2.1-p3
+  enable_pgversion_env_var: true
+  enable_spilo_wal_path_compat: false
+  etcd_host: ""
+  max_instances: -1
+  min_instances: -1
+  resync_period: 30m
+  repair_period: 5m
+  workers: 8
+  users:
+    enable_password_rotation: false
+    password_rotation_interval: 90
+    password_rotation_user_retention: 180
+    replication_username: standby
+    super_username: postgres
+  major_version_upgrade:
+    major_version_upgrade_mode: "off"
+    minimal_major_version: "9.6"
+    target_major_version: "14"
+  kubernetes:
+    cluster_domain: cluster.local
+    cluster_labels:
+      application: spilo
+    cluster_name_label: cluster-name
+    enable_init_containers: true
+    enable_pod_antiaffinity: false
+    enable_pod_disruption_budget: true
+    enable_sidecars: true
+    master_pod_move_timeout: 20m
+    oauth_token_secret_name: postgresql-operator
+    pdb_name_format: "postgres-{cluster}-pdb"
+    pod_antiaffinity_topology_key: "kubernetes.io/hostname"
+    pod_environment_configmap: postgres-pod-config
+    pod_management_policy: "ordered_ready"
+    pod_role_label: spilo-role
+    pod_service_account_name: postgres-pod
+    pod_terminate_grace_period: 5m
+    secret_name_template: "{username}.{cluster}.credentials.{tprkind}.{tprgroup}"
+    spilo_allow_privilege_escalation: true
+    spilo_privileged: false
+    storage_resize_mode: pvc
+  postgres_pod_resources:
+    default_cpu_limit: "1"
+    default_cpu_request: 100m
+    default_memory_limit: 500Mi
+    default_memory_request: 100Mi
+  timeouts:
+    patroni_api_check_interval: 1s
+    patroni_api_check_timeout: 5s
+    pod_label_wait_timeout: 10m
+    pod_deletion_wait_timeout: 10m
+    ready_wait_interval: 4s
+    ready_wait_timeout: 30s
+    resource_check_interval: 3s
+    resource_check_timeout: 10m
+  load_balancer:
+    enable_master_load_balancer: false
+    enable_master_pooler_load_balancer: false
+    enable_replica_load_balancer: false
+    enable_replica_pooler_load_balancer: false
+    external_traffic_policy: "Cluster"
+    master_dns_name_format: "{cluster}.{team}.{hostedzone}"
+    replica_dns_name_format: "{cluster}-repl.{team}.{hostedzone}"
+  logical_backup:
+    logical_backup_docker_image: "registry.opensource.zalan.do/acid/logical-backup:v1.7.1"
+    logical_backup_job_prefix: "logical-backup-"
+    logical_backup_provider: "s3"
+    logical_backup_s3_bucket: "my-bucket-url"
+    logical_backup_s3_sse: "AES256"
+    logical_backup_schedule: "0 0 1 1 *"
+  debug:
+    debug_logging: true
+    enable_database_access: true
+  teams_api:
+    enable_team_member_deprecation: false
+    enable_team_superuser: false
+    enable_teams_api: false
+    pam_role_name: zalandos
+    protected_role_names:
+    - admin
+    - cron_admin
+    role_deletion_suffix: "_deleted"
+    team_admin_role: admin
+    team_api_role_configuration:
+      log_statement: all
+  logging_rest_api:
+    api_port: 8080
+    cluster_history_entries: 1000
+    ring_log_lines: 100
+  connection_pooler:
+    connection_pooler_default_cpu_limit: "1"
+    connection_pooler_default_cpu_request: "500m"
+    connection_pooler_default_memory_limit: 100Mi
+    connection_pooler_default_memory_request: 100Mi
+    connection_pooler_image: "registry.opensource.zalan.do/acid/pgbouncer:master-19"
+    connection_pooler_mode: "transaction"
+    connection_pooler_number_of_instances: 2
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-pod-config
+  namespace: {{ k8s_postgresql_operator_namespace }}
+data:
+  ALLOW_NOSSL: "1"

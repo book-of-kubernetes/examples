@@ -1,0 +1,19 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: watch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: watch
+  template:
+    metadata:
+      labels:
+        app: watch
+    spec:
+      containers:
+      - name: watch
+        image: bookofkubernetes/crdwatcher:1.0.1
+      serviceAccountName: watcher

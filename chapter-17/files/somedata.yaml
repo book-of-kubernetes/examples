@@ -1,0 +1,8 @@
+---
+apiVersion: bookofkubernetes.com/v1
+kind: Sample
+metadata:
+  namespace: default
+  name: somedata
+spec:
+  value: 123

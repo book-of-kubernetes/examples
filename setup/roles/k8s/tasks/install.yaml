@@ -1,0 +1,237 @@
+---
+- name: br_netfilter module
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
+- name: make br_netfilter module persistent
+  ansible.builtin.copy:
+    content: 'br_netfilter'
+    dest: /etc/modules-load.d/k8s.conf
+
+- name: sysctl settings
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+  loop:
+    - net.ipv4.ip_forward
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.bridge.bridge-nf-call-iptables
+
+- name: prerequisites and sundries
+  ansible.builtin.apt:
+    name: 
+      - apt-transport-https
+      - python3-pip
+      - open-iscsi
+      - nfs-common
+      - etcd-client
+      - protobuf-compiler
+    update_cache: yes
+
+- name: python prerequisites
+  pip:
+    name: openshift
+
+- name: gpg key
+  ansible.builtin.apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: repository
+  ansible.builtin.apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+    filename: kubernetes
+
+- name: install
+  ansible.builtin.apt:
+    name:
+      - kubelet={{ k8s_version }}-*
+      - kubeadm={{ k8s_version }}-*
+      - kubectl={{ k8s_version }}-*
+    update_cache: yes
+
+- name: hold kubernetes packages
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: bash completion
+  ansible.builtin.shell: 
+    cmd: kubectl completion bash > /etc/bash_completion.d/kubectl
+    creates: "/etc/bash_completion.d/kubectl"
+
+- name: kubeadm init
+  ansible.builtin.command:
+    cmd: /usr/bin/kubeadm init --config /etc/kubernetes/kubeadm-init.yaml --upload-certs 
+    creates: /etc/kubernetes/pki/ca.crt
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+
+- name: kubeadm join
+  ansible.builtin.command:
+    cmd: /usr/bin/kubeadm join --config /etc/kubernetes/kubeadm-join.yaml
+    creates: /etc/kubernetes/pki/ca.crt
+  throttle: 1
+  when: k8s_initial_master not in ansible_facts['all_ipv4_addresses']
+
+- name: collect kubelet serving csrs
+  ansible.builtin.command:
+    cmd: kubectl get csr --field-selector='spec.signerName=kubernetes.io/kubelet-serving' -o jsonpath='{.items[*].metadata.name}'
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  register: k8s_kubelet_csrs
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+  changed_when: false
+  failed_when: false
+
+- name: sign kubelet serving csrs
+  ansible.builtin.shell: kubectl certificate approve {{ k8s_kubelet_csrs.stdout }}
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_kubelet_csrs.stdout | length > 0
+  changed_when: false
+
+- name: download calico operator
+  ansible.builtin.get_url:
+    url: https://docs.projectcalico.org/archive/v{{ calico_version }}/manifests/tigera-operator.yaml
+    dest: /etc/kubernetes/components/tigera-operator.yaml
+    mode: '0644'
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_network == 'calico'
+
+- name: install calico
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: /etc/kubernetes/admin.conf
+    src: /etc/kubernetes/components/{{ item }}
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_network == 'calico'
+  loop:
+    - tigera-operator.yaml
+    - custom-resources.yaml
+
+- name: install flannel
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: /etc/kubernetes/admin.conf
+    src: /etc/kubernetes/components/flannel.yaml
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_network == 'flannel'
+
+- name: install weave
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: /etc/kubernetes/admin.conf
+    src: /etc/kubernetes/components/weave.yaml
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_network == 'weave'
+
+- name: iscsid service for longhorn
+  ansible.builtin.systemd:
+    name: iscsid
+    state: started
+    enabled: yes
+
+- name: download longhorn config
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/longhorn/longhorn/v{{ k8s_longhorn_version }}/deploy/longhorn.yaml
+    dest: /etc/kubernetes/components/longhorn.yaml
+    mode: '0644'
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+
+- name: install longhorn
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: /etc/kubernetes/admin.conf
+    src: /etc/kubernetes/components/longhorn.yaml
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+
+- name: download metrics server
+  ansible.builtin.get_url:
+    url: https://github.com/kubernetes-sigs/metrics-server/releases/download/metrics-server-helm-chart-{{ metrics_server_version }}/components.yaml
+    dest: /etc/kubernetes/components/metrics-server.yaml
+    mode: '0644'
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+
+- name: install metrics server
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: /etc/kubernetes/admin.conf
+    src: /etc/kubernetes/components/metrics-server.yaml
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - not k8s_prometheus
+
+- name: download ingress controller
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v{{ ingress_version }}/deploy/static/provider/cloud/deploy.yaml
+    dest: /etc/kubernetes/components/ingress-controller.yaml
+    mode: '0644'
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+
+- name: install ingress controller
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: /etc/kubernetes/admin.conf
+    src: /etc/kubernetes/components/ingress-controller.yaml
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+  failed_when: false
+
+- name: patch ingress controller
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: /etc/kubernetes/admin.conf
+    src: /etc/kubernetes/components/ingress-patch.yaml
+  when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+  failed_when: false
+
+- name: postgresql operator namespace
+  kubernetes.core.k8s:
+    name: "{{ k8s_postgresql_operator_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+    kubeconfig: /etc/kubernetes/admin.conf
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_postgresql_operator != "none"
+
+- name: setup postgresql operator
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: /etc/kubernetes/admin.conf
+    src: /etc/kubernetes/components/{{ item }}
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_postgresql_operator != "none"
+  retries: 10
+  register: result
+  until: result is successful
+  loop:
+    - operatorconfiguration.crd.yaml
+    - postgresql-operator-default-configuration.yaml
+    - operator-service-account-rbac.yaml
+
+- name: install postgresql operator
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: /etc/kubernetes/admin.conf
+    src: /etc/kubernetes/components/postgres-operator.yaml
+  when: 
+    - k8s_initial_master in ansible_facts['all_ipv4_addresses']
+    - k8s_postgresql_operator == "install"

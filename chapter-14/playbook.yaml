@@ -1,0 +1,35 @@
+---
+- hosts: masters
+  become: yes
+  roles:
+    - tools
+    - containerd
+    - crictl
+    - k8s
+- hosts: remote
+  become: yes
+  tasks:
+    - name: resource files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0644'
+      with_list:
+        - edit-bind.yaml
+        - iperf-limit.yaml
+        - iperf-server.yaml
+        - iperf.yaml
+        - nginx-limit.yaml
+        - sleep.yaml
+        - quota.yaml
+    - name: scripts
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/{{ item }}
+        owner: root
+        group: root
+        mode: '0755'
+      with_list:
+        - cgroup-info

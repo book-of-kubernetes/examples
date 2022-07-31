@@ -1,0 +1,22 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: todo
+  labels:
+    app: todo
+spec:
+{% if not todo_ingress %}
+  type: NodePort
+{% endif %}
+  selector:
+    app: todo
+  ports:
+  - name: web
+    protocol: TCP
+    port: 5000
+{% if todo_ingress %}
+    targetPort: 5000
+{% else %}
+    nodePort: 5000
+{% endif %}

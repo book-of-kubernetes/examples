@@ -66,8 +66,11 @@
       - proto: tcp
         ports:
         - 80
+        - 3000
+        - 5000
+        - 9090
         cidr_ip: 0.0.0.0/0
-        rule_desc: allow incoming http
+        rule_desc: allow incoming http for todo, grafana, and prometheus
       - proto: all
         cidr_ip: "{{ aws_private_cidr }}"
         rule_desc: allow all private traffic
@@ -122,7 +125,9 @@
 - name: collect lb targets
   ansible.builtin.set_fact:
     aws_lb_tgt: "{{ aws_lb_tgt|default([]) + [{'Id': item.value.ip}] }}"
-  when: item.value.type == 'master'
+  when: 
+    - item.value.type == 'master'
+    - aws_lb is defined
   with_dict: "{{ aws_instances }}"
 
 - name: target groups

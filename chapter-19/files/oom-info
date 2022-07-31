@@ -1,0 +1,19 @@
+#!/bin/bash
+POD=$1
+if [ -z "${POD}" ]
+then
+  echo "Usage: oom-info <pod name>"
+  exit 1
+fi
+
+CNT_ID=$(crictl ps --name ${POD} -q)
+if [ -z "${CNT_ID}" ]
+then
+  echo "Pod ${POD} not found"
+  exit 2
+fi
+
+pid_field='.info.pid'
+PID=$(crictl inspect $CNT_ID | jq -r "$pid_field")
+echo -n "OOM Score Adjustment: "
+cat /proc/$PID/oom_score_adj

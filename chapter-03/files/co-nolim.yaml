@@ -2,9 +2,8 @@
 metadata:
   name: stress
 image:
-  image: docker.io/alanhohn/stress:latest
+  image: docker.io/bookofkubernetes/stress:latest
 args:
-  - "/usr/local/bin/stress"
   - "--cpu"
   - "1"
   - "-v"
