@@ -1,4 +1,11 @@
 ---
+- name: prerequisites
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+    state: latest
+    update_cache: yes
+
 - name: gpg key
   ansible.builtin.apt_key:
     url: "{{ crio_repo }}/{{ crio_os }}/Release.key"
