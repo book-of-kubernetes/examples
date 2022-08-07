@@ -2,7 +2,7 @@
 metadata:
   name: stress1
 image:
-  image: docker.io/bookofkubernetes/stress:latest
+  image: docker.io/bookofkubernetes/stress:stable
 args:
   - "--cpu"
   - "1"
