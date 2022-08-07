@@ -1,8 +1,10 @@
 ---
 - name: install
   apt:
-    name: 
+    name:
       - jq
       - tmux
       - unzip
+      - ca-certificates
+    state: latest
     update_cache: yes
