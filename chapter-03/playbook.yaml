@@ -1,14 +1,14 @@
 ---
-- hosts: clients
-  become: yes
-  roles:
-    - cri-o
-    - crictl
 - hosts: remote
   become: yes
   roles:
     - tools
     - iperf
+- hosts: clients
+  become: yes
+  roles:
+    - cri-o
+    - crictl
 - hosts: remote
   become: yes
   tasks:
