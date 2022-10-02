@@ -16,6 +16,6 @@ case $HOST in
 
 esac
 
-ssh_args="-o UserKnownHostsFile=../sshkeys/known_hosts_aws_ansible_k8s"
-ssh_args+=" -i ../sshkeys/id_rsa_aws_ansible_k8s"
+ssh_args="-o UserKnownHostsFile={{ aws_k8s_ssh_dir }}/known_hosts_aws_ansible_k8s"
+ssh_args+=" -i {{ aws_k8s_ssh_dir }}/id_rsa_aws_ansible_k8s"
 ssh $ssh_args ubuntu@$IP

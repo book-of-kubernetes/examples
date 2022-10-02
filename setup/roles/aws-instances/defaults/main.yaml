@@ -9,3 +9,4 @@ aws_ubuntu_owner: "099720109477"
 aws_ubuntu_image: "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223"
 aws_k8s_teardown: false
 aws_k8s_delete: false
+aws_k8s_ssh_dir: "../sshkeys"

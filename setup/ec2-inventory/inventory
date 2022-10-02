@@ -35,7 +35,7 @@ tag_type_server
 [aws_ec2:vars]
 ansible_python_interpreter=/usr/bin/python3
 ansible_user=ubuntu
-ansible_ssh_private_key_file={{ playbook_dir }}/../sshkeys/id_rsa_aws_ansible_k8s
+ansible_ssh_private_key_file={{ inventory_dir }}/../../sshkeys/id_rsa_aws_ansible_k8s
 
 # Specify the "remote" group that is shared by AWS and Vagrant.
 [remote:children]

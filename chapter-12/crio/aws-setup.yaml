@@ -2,6 +2,7 @@
 - hosts: localhost
   connection: local
   vars:
+    aws_k8s_ssh_dir: "../../sshkeys"
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
     aws_lb:
       ip: 192.168.61.10
