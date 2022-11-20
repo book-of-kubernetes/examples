@@ -9,6 +9,11 @@ groups = {
 }
 
 Vagrant.configure("2") do |config|
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+  config.proxy.http     = "http://192.168.61.1:10809/"
+  config.proxy.https    = "http://192.168.61.1:10809/"
+  config.proxy.no_proxy = "localhost,127.0.0.1,.example.com"
+  end
   config.vm.box = "ubuntu/focal64"
   cluster.each do |name, data|
     config.vm.define name do |host|
