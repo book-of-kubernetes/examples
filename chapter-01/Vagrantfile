@@ -10,9 +10,9 @@ groups = {
 
 Vagrant.configure("2") do |config|
   if Vagrant.has_plugin?("vagrant-proxyconf")
-  config.proxy.http     = "http://192.168.61.1:10809/"
-  config.proxy.https    = "http://192.168.61.1:10809/"
-  config.proxy.no_proxy = "localhost,127.0.0.1,.example.com"
+    config.proxy.http     = "http://192.168.61.1:10809/"
+    config.proxy.https    = "http://192.168.61.1:10809/"
+    config.proxy.no_proxy = "localhost,127.0.0.1,.example.com"
   end
   config.vm.box = "ubuntu/focal64"
   cluster.each do |name, data|
@@ -26,8 +26,19 @@ Vagrant.configure("2") do |config|
       end
     end
   end
-  config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "playbook.yaml"
-    ansible.groups = groups
+  # config.vm.provision "ansible" do |ansible|
+  #   ansible.playbook = "playbook.yaml"
+  #   ansible.groups = groups
+  # end
+  config.vm.define 'controller' do |machine|
+    machine.vm.network "private_network", ip: "192.168.61.61"
+
+    machine.vm.provision :ansible_local do |ansible|
+      ansible.playbook       = "playbook.yml"
+      ansible.verbose        = true
+      ansible.install        = true
+      ansible.limit          = hosts
+      ansible.inventory_path = "inventory"
+    end
   end
 end
