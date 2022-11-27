@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
     config.proxy.no_proxy = "localhost,127.0.0.1,.example.com"
   end
   config.vm.box = "ubuntu/focal64"
-  config.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "vagrant", mount_options: ["dmode=775,fmode=777"]
+  config.vm.synced_folder ".", "/vagrant", owner: "vagrant", group: "vagrant", mount_options: ["dmode=775,fmode=600"]
   cluster.each do |name, data|
     config.vm.define name do |host|
       host.vm.hostname = name
