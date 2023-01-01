@@ -1,0 +1,19 @@
+---
+- name: install node
+  ansible.builtin.apt:
+    name:
+    - nodejs
+    - npm
+    update_cache: yes
+
+- name: install bats
+  community.general.npm:
+    name: "{{ item }}"
+    global: yes
+  loop:
+    - bats
+    - bats-assert
+    - bats-support
+
+- name: run tests
+  ansible.builtin.shell: bats {{ test_options }} {{ test_path }}

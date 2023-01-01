@@ -1,0 +1,3 @@
+---
+test_options: "-r"
+test_path: /opt/tests
