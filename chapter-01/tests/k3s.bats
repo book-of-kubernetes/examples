@@ -1,3 +1,4 @@
+# bats file_tags=host01
 
 setup() {
   BATS_LIB_PATH=/usr/local/lib/node_modules

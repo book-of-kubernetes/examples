@@ -7,13 +7,11 @@
     update_cache: yes
 
 - name: install bats
-  community.general.npm:
-    name: "{{ item }}"
-    global: yes
-  loop:
-    - bats
-    - bats-assert
-    - bats-support
+  ansible.builtin.shell: >
+    npm install -g 
+    bats 
+    bats-assert 
+    bats-support@git+https://github.com/ztombol/bats-support.git#v0.2.0
 
 - name: run tests
   ansible.builtin.shell: bats {{ test_options }} {{ test_path }}
