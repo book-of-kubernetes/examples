@@ -1,2 +1,2 @@
 evictionHard:
-  memory.available: "900Mi"
+  memory.available: "1900Mi"
