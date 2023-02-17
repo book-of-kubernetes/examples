@@ -135,18 +135,47 @@ ansible-playbook aws-delete.yaml
 
 ## Vagrant
 
+Each chapter contains a `Vagrantfile` (or, where the chapter explores multiple
+different options, multiple directories each holding a `Vagrantfile`). This
+allows the use of a separate set of virtual machines for each chapter to
+avoid the setup from one chapter conflicting with the next.
+
+To get started with Vagrant, we need a hypervisor. The `Vagrantfile` used
+for each chapter is designed for [VirtualBox][vbox], the default hypervisor
+for Vagrant. 
+
+[vbox]:https://www.virtualbox.org/
+
+Installation of VirtualBox will be different for each OS or distribution.
+For example, on an Ubuntu system, the following command (run as root) should 
+work:
+
 ```
 apt install virtualbox libarchive-tools
 ```
 
-Download Vagrant, unzip to a dir on PATH
+In general, follow the instructions on the VirtualBox site.
 
-**TODO** Incorporate these notes from Xander:
+Once VirtualBox is installed, the next step is to install [Vagrant][vagrant]. 
+For some distributions, Vagrant is available as a package in the standard
+repositories. However, it is best to review [the instructions on the Vagrant
+site][vagrant-install] and install using the Hashicorp repositories if 
+possible, as the version in the standard repositories may not have all the 
+necessary features. For example, Fedora 34 users have reported trouble with 
+both Vagrant 2.2.7 and with Vagrant 2.2.19 when installed from the Fedora 
+repos.
 
-Vagrant was quite noisy about proclaiming the fact that the version that was
-shipped with Fedora 34 is not the latest one. To install it, you have to
-follow the instructions here [1]. The trouble is that with the Fedora one, at
-least, is that it is not considered the latest one, even though the version is
-higher. I had to “downgrade” from 2.2.7. (shipped with F34) to 2.2.18 (
-shipped with Hashicorp). This may be worth mentioning in the installation
-instructions. I have not tested this on Ubuntu.
+[vagrant]:https://www.vagrantup.com/
+[vagrant-install]:https://developer.hashicorp.com/vagrant/downloads
+
+Thanks to [Xander Soldaat][botbench] and to [Abe Hanoka][abe-101] for their
+feedback regarding using Vagrant on Fedora with these examples.
+
+[botbench]:https://github.com/botbench
+[abe-101]:https://github.com/abe-101
+
+Once VirtualBox and Vagrant are installed and working, and Ansible is
+installed and set up per the instructions above, you can simply run
+`vagrant up` in any directory with a `Vagrantfile`. This will automatically
+apply the primary automation for that chapter. See the `README.md` file in
+each chapter for more information.
