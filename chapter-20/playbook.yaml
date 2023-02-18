@@ -38,6 +38,7 @@
         mode: '0755'
       with_list:
         - api-metrics.sh
+        - api-server-metrics.sh
         - install-kube-prometheus.sh
 - hosts: aws_ec2
   tasks:
