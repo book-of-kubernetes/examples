@@ -6,7 +6,7 @@ aws_k8s_pod_cidr: 172.31.0.0/16
 aws_k8s_svc_cidr: 10.96.0.0/12
 aws_key: aws_ansible_k8s
 aws_ubuntu_owner: "099720109477"
-aws_ubuntu_image: "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210223"
+aws_ubuntu_image: "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
 aws_k8s_teardown: false
 aws_k8s_delete: false
 aws_k8s_ssh_dir: "../sshkeys"
