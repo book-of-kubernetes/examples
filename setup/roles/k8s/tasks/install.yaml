@@ -84,6 +84,11 @@
     cmd: kubectl completion bash > /etc/bash_completion.d/kubectl
     creates: "/etc/bash_completion.d/kubectl"
 
+- name: make sure folder by harri
+  ansible.builtin.file:
+    path: /etc/systemd/system/containerd.service.d
+    state: directory
+
 - name: set proxy in config file for systemd by harri
   ansible.builtin.copy:
     dest: /etc/systemd/system/containerd.service.d/http-proxy.conf
