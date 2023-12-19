@@ -3,6 +3,9 @@
   ansible.builtin.apt:
     name: apt-transport-https
     update_cache: yes
+  environment:
+    http_proxy: "http://192.168.61.1:7890"
+    https_proxy: "http://192.168.61.1:7890"
 
 - name: gpg key
   ansible.builtin.apt_key:
@@ -19,6 +22,9 @@
   ansible.builtin.apt:
     name: containerd.io
     update_cache: yes
+  environment:
+    http_proxy: "http://192.168.61.1:7890"
+    https_proxy: "http://192.168.61.1:7890"
 
 - name: enable cri
   ansible.builtin.lineinfile:

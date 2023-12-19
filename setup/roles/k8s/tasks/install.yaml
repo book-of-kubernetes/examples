@@ -31,6 +31,9 @@
       - etcd-client
       - protobuf-compiler
     update_cache: yes
+  environment:
+    http_proxy: "http://192.168.61.1:7890"
+    https_proxy: "http://192.168.61.1:7890"
 
 - name: python prerequisites
   pip:
@@ -63,6 +66,9 @@
       - kubeadm={{ k8s_version }}-*
       - kubectl={{ k8s_version }}-*
     update_cache: yes
+  environment:
+    http_proxy: "http://192.168.61.1:7890"
+    https_proxy: "http://192.168.61.1:7890"
 
 - name: hold kubernetes packages
   ansible.builtin.dpkg_selections:
