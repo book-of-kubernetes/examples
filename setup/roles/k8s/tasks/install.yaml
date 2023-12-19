@@ -89,6 +89,10 @@
     cmd: /usr/bin/kubeadm init --config /etc/kubernetes/kubeadm-init.yaml --upload-certs 
     creates: /etc/kubernetes/pki/ca.crt
   when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+  environment:
+    http_proxy: "http://192.168.61.1:7890"
+    https_proxy: "http://192.168.61.1:7890"
+    no_proxy: "192.168.61.10,192.168.61.11,192.168.61.12,192.168.61.13"
 
 - name: kubeadm join
   ansible.builtin.command:
