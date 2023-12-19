@@ -84,10 +84,14 @@
     cmd: kubectl completion bash > /etc/bash_completion.d/kubectl
     creates: "/etc/bash_completion.d/kubectl"
 
-- name: set proxy by harri
-  ansible.builtin.shell: |
-    systemctl set-environment HTTP_PROXY=http://192.168.61.1:7890
-    systemctl set-environment HTTPS_PROXY=http://192.168.61.1:7890
+- name: set proxy in config file for systemd by harri
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/containerd.service.d/http-proxy.conf
+    content: |
+      [Service]
+      Environment="HTTP_PROXY=http://192.168.61.1:7890"
+      Environment="HTTPS_PROXY=http://192.168.61.1:7890"
+      Environment="NO_PROXY=192.168.61.10,192.168.61.11,192.168.61.12,192.168.61.13,10.96.0.0/12,10.93.98.0/24,10.244.0.0/16,172.31.0.0/16,127.0.0.1"
 
 - name: restart containerd by harri
   ansible.builtin.systemd:
