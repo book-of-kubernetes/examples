@@ -84,6 +84,17 @@
     cmd: kubectl completion bash > /etc/bash_completion.d/kubectl
     creates: "/etc/bash_completion.d/kubectl"
 
+- name: set proxy by harri
+  ansible.builtin.shell: |
+    systemctl set-environment HTTP_PROXY=http://192.168.61.1:7890
+    systemctl set-environment HTTPS_PROXY=http://192.168.61.1:7890
+
+- name: restart containerd by harri
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: true
+    name: containerd
+
 - name: kubeadm init
   ansible.builtin.command:
     cmd: /usr/bin/kubeadm init --config /etc/kubernetes/kubeadm-init.yaml --upload-certs 
