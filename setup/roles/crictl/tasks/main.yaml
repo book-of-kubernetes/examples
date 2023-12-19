@@ -4,6 +4,9 @@
     src: "{{ crictl_url }}"
     dest: /usr/local/bin
     remote_src: yes
+  environment:
+    http_proxy: "http://192.168.61.1:7890"
+    https_proxy: "http://192.168.61.1:7890"
 
 - name: configure
   ansible.builtin.template:
