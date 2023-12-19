@@ -35,17 +35,26 @@
 - name: python prerequisites
   pip:
     name: openshift
+  environment:
+    http_proxy: "http://192.168.61.1:7890"
+    https_proxy: "http://192.168.61.1:7890"
 
 - name: gpg key
   ansible.builtin.apt_key:
     url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     state: present
+  environment:
+    http_proxy: "http://192.168.61.1:7890"
+    https_proxy: "http://192.168.61.1:7890"
 
 - name: repository
   ansible.builtin.apt_repository:
     repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
     state: present
     filename: kubernetes
+  environment:
+    http_proxy: "http://192.168.61.1:7890"
+    https_proxy: "http://192.168.61.1:7890"
 
 - name: install
   ansible.builtin.apt:
