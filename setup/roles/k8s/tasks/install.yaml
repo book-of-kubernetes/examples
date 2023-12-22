@@ -209,6 +209,9 @@
     dest: /etc/kubernetes/components/metrics-server.yaml
     mode: '0644'
   when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
+  environment:
+    http_proxy: "http://192.168.61.1:7890"
+    https_proxy: "http://192.168.61.1:7890"
 
 - name: install metrics server
   kubernetes.core.k8s:
