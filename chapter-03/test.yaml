@@ -1,0 +1,12 @@
+---
+- hosts: remote
+  become: yes
+  pre_tasks:
+    - name: install tests
+      ansible.builtin.copy:
+        src: tests
+        dest: /opt
+        owner: root
+        group: root
+  roles:
+    - test
