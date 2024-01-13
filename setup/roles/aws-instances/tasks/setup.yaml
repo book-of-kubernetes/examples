@@ -90,6 +90,13 @@
       name: "{{ aws_ubuntu_image }}"
   register: ec2_ami_facts_result
 
+- name: ensure ami found
+  ansible.builtin.fail:
+    msg: >
+      Expected AMI not found; check the aws_ubuntu_owner and aws_ubuntu_image
+      variables in setup/roles/aws-instances/defaults/main.yaml
+  when: ec2_ami_facts_result['images'] | length == 0
+
 - name: instances
   community.aws.ec2_instance:
     region: "{{ aws_region }}"
