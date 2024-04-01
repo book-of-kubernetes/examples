@@ -38,12 +38,12 @@
 
 - name: gpg key
   ansible.builtin.apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
     state: present
 
 - name: repository
   ansible.builtin.apt_repository:
-    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    repo: deb https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
     state: present
     filename: kubernetes
 
@@ -104,7 +104,7 @@
 
 - name: download calico operator
   ansible.builtin.get_url:
-    url: https://projectcalico.docs.tigera.io/archive/v{{ calico_version }}/manifests/tigera-operator.yaml
+    url: https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/tigera-operator.yaml
     dest: /etc/kubernetes/components/tigera-operator.yaml
     mode: '0644'
   when: 
@@ -163,7 +163,7 @@
 
 - name: download metrics server
   ansible.builtin.get_url:
-    url: https://github.com/kubernetes-sigs/metrics-server/releases/download/metrics-server-helm-chart-{{ metrics_server_version }}/components.yaml
+    url: https://github.com/kubernetes-sigs/metrics-server/releases/download/v{{ metrics_server_version }}/components.yaml
     dest: /etc/kubernetes/components/metrics-server.yaml
     mode: '0644'
   when: k8s_initial_master in ansible_facts['all_ipv4_addresses']
