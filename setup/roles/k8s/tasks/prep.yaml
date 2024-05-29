@@ -116,7 +116,9 @@
     - k8s_initial_master in ansible_facts['all_ipv4_addresses']
     - k8s_postgresql_operator != "none"
   loop:
+    - postgresteams.yaml
     - operatorconfiguration.crd.yaml
+    - postgresteams.yaml
     - postgresql-operator-default-configuration.yaml
     - operator-service-account-rbac.yaml
     - postgres-operator.yaml
