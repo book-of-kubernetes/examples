@@ -223,6 +223,7 @@
   register: result
   until: result is successful
   loop:
+    - postgresteams.yaml
     - operatorconfiguration.crd.yaml
     - postgresql-operator-default-configuration.yaml
     - operator-service-account-rbac.yaml
