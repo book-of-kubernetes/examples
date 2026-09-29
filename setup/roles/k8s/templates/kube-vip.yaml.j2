@@ -6,18 +6,18 @@ metadata:
 spec:
   containers:
   - name: kube-vip
-    image: ghcr.io/kube-vip/kube-vip:v0.3.8
-    imagePullPolicy: Always
+    image: ghcr.io/kube-vip/kube-vip:{{ k8s_kube_vip_version }}
+    imagePullPolicy: IfNotPresent
     args:
     - manager
     env:
     - name: vip_arp
-      value: "false"
+      value: "true"
     - name: vip_interface
-      value: lo
+      value: {{ k8s_node_iface }}
     - name: port
       value: "6443"
-    - name: vip_cidr
+    - name: vip_subnet
       value: "32"
     - name: cp_enable
       value: "true"
@@ -27,37 +27,40 @@ spec:
       value: "false"
     - name: svc_enable
       value: "true"
-    - name: vip_startleader
-      value: "false"
-    - name: vip_addpeerstolb
+    - name: vip_leaderelection
       value: "true"
-    - name: vip_localpeer
-      value: {{ inventory_hostname }}:{{ ansible_facts['all_ipv4_addresses'] | intersect(k8s_cluster_ips) | join('') }}:10000
-    - name: bgp_enable
-      value: "true"
-    - name: bgp_routerid
-      value: {{ ansible_facts['all_ipv4_addresses'] | intersect(k8s_cluster_ips) | join('') }}
-    - name: bgp_as
-      value: "65000"
-    - name: bgp_peeraddress
-    - name: bgp_peerpass
-    - name: bgp_peeras
-      value: "65000"
-    - name: bgp_peers
-      value: {{ k8s_cluster_ips | join(':65000::false,') }}:65000::false
-    - name: vip_address
+    - name: vip_leasename
+      value: plndr-cp-lock
+    - name: vip_leaseduration
+      value: "15"
+    - name: vip_renewdeadline
+      value: "10"
+    - name: vip_retryperiod
+      value: "2"
+    - name: address
       value: {{ k8s_control_plane_endpoint }}
     securityContext:
       capabilities:
         add:
         - NET_ADMIN
         - NET_RAW
-        - SYS_TIME
+        drop:
+        - ALL
     volumeMounts:
     - mountPath: /etc/kubernetes/admin.conf
       name: kubeconfig
+  hostAliases:
+  - hostnames:
+    - kubernetes
+    ip: 127.0.0.1
   hostNetwork: true
   volumes:
+  # Since Kubernetes 1.29, admin.conf has no permissions until kubeadm init
+  # finishes, so the first control plane node must use super-admin.conf.
   - hostPath:
+{% if k8s_initial_master in ansible_facts['all_ipv4_addresses'] %}
+      path: /etc/kubernetes/super-admin.conf
+{% else %}
       path: /etc/kubernetes/admin.conf
+{% endif %}
     name: kubeconfig

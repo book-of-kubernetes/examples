@@ -1,3 +1,4 @@
 ---
-k3s_version: "v1.23.4+k3s1"
-k3s_url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s
+k3s_version: "v1.34.11+k3s1"
+k3s_binary: "{{ 'k3s-arm64' if ansible_facts['architecture'] == 'aarch64' else 'k3s' }}"
+k3s_url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/{{ k3s_binary }}

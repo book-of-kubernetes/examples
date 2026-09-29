@@ -25,6 +25,20 @@
     key: "{{ k8s_all_public_key }}"
   when: k8s_initial_master not in ansible_facts['all_ipv4_addresses']
 
+- name: find cluster network interface
+  ansible.builtin.set_fact:
+    k8s_node_iface: "{{ ansible_facts['interfaces'] | map('regex_replace', '-', '_') | map('extract', ansible_facts) | selectattr('ipv4', 'defined') | selectattr('ipv4.address', 'in', k8s_cluster_ips) | map(attribute='device') | first }}"
+
+- name: disable swap
+  ansible.builtin.command: swapoff -a
+  when: ansible_facts['swaptotal_mb'] > 0
+
+- name: disable swap at boot
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\sswap\s.*)$'
+    replace: '# \1'
+
 - name: version specifier
   ansible.builtin.template:
     src: k8s-ver.j2

@@ -18,9 +18,12 @@ fi
 cgp_field='.info.config.linux.cgroup_parent'
 CGP=$(crictl inspectp $POD_ID | jq -r "$cgp_field")
 
-# The same cgroup dir is used for both CPU and memory cgroups
-CPU=/sys/fs/cgroup/cpu/$CGP
-MEM=/sys/fs/cgroup/memory/$CGP
+# With the systemd cgroup driver, the cgroup parent is a systemd slice name
+# (e.g. kubepods-burstable-pod<uid>.slice) rather than a path
+if [[ "${CGP}" == *.slice ]]
+then
+  CGP=$(systemctl show -p ControlGroup --value ${CGP})
+fi
 
 # Print our findings
 echo ""
@@ -30,13 +33,35 @@ echo Pod ID: $POD_ID
 echo Cgroup path: $CGP
 echo ""
 
-echo "CPU Settings"
-echo "------------"
-echo "CPU Shares:" $(cat $CPU/cpu.shares)
-echo "CPU Quota (us):" $(cat $CPU/cpu.cfs_quota_us) "per" $(cat $CPU/cpu.cfs_period_us)
-echo ""
+if [ -f /sys/fs/cgroup/cgroup.controllers ]
+then
+  # cgroup v2: a single unified hierarchy for CPU and memory
+  CG=/sys/fs/cgroup/$CGP
+  read CPU_QUOTA CPU_PERIOD < $CG/cpu.max
 
-echo "Memory Settings"
-echo "---------------"
-echo "Limit (bytes):" $(cat $MEM/memory.limit_in_bytes)
-echo ""
+  echo "CPU Settings"
+  echo "------------"
+  echo "CPU Weight:" $(cat $CG/cpu.weight)
+  echo "CPU Quota (us):" $CPU_QUOTA "per" $CPU_PERIOD
+  echo ""
+
+  echo "Memory Settings"
+  echo "---------------"
+  echo "Limit (bytes):" $(cat $CG/memory.max)
+  echo ""
+else
+  # cgroup v1: the same cgroup dir is used for both CPU and memory cgroups
+  CPU=/sys/fs/cgroup/cpu/$CGP
+  MEM=/sys/fs/cgroup/memory/$CGP
+
+  echo "CPU Settings"
+  echo "------------"
+  echo "CPU Shares:" $(cat $CPU/cpu.shares)
+  echo "CPU Quota (us):" $(cat $CPU/cpu.cfs_quota_us) "per" $(cat $CPU/cpu.cfs_period_us)
+  echo ""
+
+  echo "Memory Settings"
+  echo "---------------"
+  echo "Limit (bytes):" $(cat $MEM/memory.limit_in_bytes)
+  echo ""
+fi

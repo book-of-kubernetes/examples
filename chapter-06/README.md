@@ -6,6 +6,33 @@ This folder provides the examples for the chapter "Why Kubernetes Matters".
 
 Be sure to start by following the instructions in the `setup` folder.
 
+## Ubuntu 24.04 and Kubernetes 1.34 Notes
+
+The Kubernetes packages are now published at `pkgs.k8s.io`, with a separate
+repository for each minor version, and `apt-key` is no longer used on Ubuntu
+24.04. The variables in `/opt/k8sver` are updated, so install the
+Kubernetes packages on each host with these commands instead of the ones in
+the book:
+
+```
+source /opt/k8sver
+curl -fsSL $k8s_repo/Release.key -o /etc/apt/keyrings/kubernetes.asc
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes.asc] $k8s_repo/ /" > /etc/apt/sources.list.d/kubernetes.list
+apt update
+apt install -y kubelet=$K8SV kubeadm=$K8SV kubectl=$K8SV
+apt-mark hold kubelet kubeadm kubectl
+```
+
+Calico now ships its custom resource definitions separately from the
+operator. They are too large for a client-side `kubectl apply`, so install
+Calico with:
+
+```
+kubectl create -f $calico_crds_url
+kubectl create -f $calico_url
+kubectl apply -f /etc/kubernetes/components/custom-resources.yaml
+```
+
 ## Running in AWS
 
 Start by provisioning:

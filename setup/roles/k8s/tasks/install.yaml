@@ -1,12 +1,17 @@
 ---
-- name: br_netfilter module
+- name: kernel modules
   community.general.modprobe:
-    name: br_netfilter
+    name: "{{ item }}"
     state: present
+  loop:
+    - overlay
+    - br_netfilter
 
-- name: make br_netfilter module persistent
+- name: make kernel modules persistent
   ansible.builtin.copy:
-    content: 'br_netfilter'
+    content: |
+      overlay
+      br_netfilter
     dest: /etc/modules-load.d/k8s.conf
 
 - name: sysctl settings
@@ -30,22 +35,28 @@
       - nfs-common
       - etcd-client
       - protobuf-compiler
+      - conntrack
+      - socat
     update_cache: yes
 
 - name: python prerequisites
-  pip:
-    name: openshift
+  ansible.builtin.pip:
+    name: kubernetes=={{ k8s_python_client_version }}
+    break_system_packages: true
 
 - name: gpg key
-  ansible.builtin.apt_key:
-    url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
-    state: present
+  ansible.builtin.get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v{{ k8s_minor_version }}/deb/Release.key
+    dest: /etc/apt/keyrings/kubernetes.asc
+    mode: '0644'
 
 - name: repository
-  ansible.builtin.apt_repository:
-    repo: deb https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
-    state: present
-    filename: kubernetes
+  ansible.builtin.deb822_repository:
+    name: kubernetes
+    uris: https://pkgs.k8s.io/core:/stable:/v{{ k8s_minor_version }}/deb/
+    suites: /
+    signed_by: /etc/apt/keyrings/kubernetes.asc
+    install_python_debian: true
 
 - name: install
   ansible.builtin.apt:
@@ -83,8 +94,13 @@
   when: k8s_initial_master not in ansible_facts['all_ipv4_addresses']
 
 - name: collect kubelet serving csrs
-  ansible.builtin.command:
-    cmd: kubectl get csr --field-selector='spec.signerName=kubernetes.io/kubelet-serving' -o jsonpath='{.items[*].metadata.name}'
+  ansible.builtin.shell: |
+    for i in $(seq 1 30); do
+      csrs=$(kubectl get csr --field-selector='spec.signerName=kubernetes.io/kubelet-serving' -o jsonpath='{.items[*].metadata.name}')
+      [ $(echo $csrs | wc -w) -ge {{ k8s_cluster_ips | length }} ] && break
+      sleep 2
+    done
+    echo $csrs
   environment:
     KUBECONFIG: /etc/kubernetes/admin.conf
   register: k8s_kubelet_csrs
@@ -104,12 +120,15 @@
 
 - name: download calico operator
   ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/tigera-operator.yaml
-    dest: /etc/kubernetes/components/tigera-operator.yaml
+    url: https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/{{ item }}
+    dest: /etc/kubernetes/components/{{ item }}
     mode: '0644'
   when: 
     - k8s_initial_master in ansible_facts['all_ipv4_addresses']
     - k8s_network == 'calico'
+  loop:
+    - operator-crds.yaml
+    - tigera-operator.yaml
 
 - name: install calico
   kubernetes.core.k8s:
@@ -119,7 +138,12 @@
   when: 
     - k8s_initial_master in ansible_facts['all_ipv4_addresses']
     - k8s_network == 'calico'
+  retries: 10
+  delay: 10
+  register: result
+  until: result is successful
   loop:
+    - operator-crds.yaml
     - tigera-operator.yaml
     - custom-resources.yaml
 
@@ -140,6 +164,39 @@
   when: 
     - k8s_initial_master in ansible_facts['all_ipv4_addresses']
     - k8s_network == 'weave'
+
+- name: iscsi_tcp module for longhorn
+  community.general.modprobe:
+    name: iscsi_tcp
+    state: present
+
+- name: make iscsi_tcp module persistent
+  ansible.builtin.copy:
+    content: 'iscsi_tcp'
+    dest: /etc/modules-load.d/longhorn.conf
+
+- name: check for multipathd
+  ansible.builtin.stat:
+    path: /usr/sbin/multipathd
+  register: k8s_multipathd
+
+- name: keep multipathd away from longhorn volumes
+  ansible.builtin.blockinfile:
+    path: /etc/multipath.conf
+    create: yes
+    mode: '0644'
+    block: |
+      blacklist {
+          devnode "^sd[a-z0-9]+"
+      }
+  register: k8s_multipath_conf
+  when: k8s_multipathd.stat.exists
+
+- name: restart multipathd
+  ansible.builtin.systemd:
+    name: multipathd
+    state: restarted
+  when: k8s_multipath_conf is changed
 
 - name: iscsid service for longhorn
   ansible.builtin.systemd:

@@ -20,11 +20,11 @@ setup() {
   assert_output --partial 'stress'
   run -0 renice -n 19 -p $(pgrep -d ' ' stress)
   run -0 /bin/sh -ec "\
-    cd /sys/fs/cgroup/cpu/system.slice/runc-${CUL_ID}.scope
+    cd \$(find /sys/fs/cgroup -type d -name crio-${CUL_ID}.scope | head -n 1)
     cat cgroup.procs
-    cat cpu.cfs_quota_us
-    echo '50000' > cpu.cfs_quota_us"
-  assert_output --partial '-1'
+    cat cpu.max
+    echo '50000 100000' > cpu.max"
+  assert_output --partial 'max 100000'
   run -0 top -b -n 1 -p "${STRESS_PIDS}"
   assert_output --partial 'stress'
 }

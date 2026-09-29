@@ -24,37 +24,38 @@ terminated automatically. Remember to terminate the instances using the
 To use this Ansible configuration, you must first install Ansible. This can
 be done using the Python package installer, `pip`.
 
-How you install `pip` will depend on your operating system and distribution. 
-For example, on Ubuntu:
+Recent Linux distributions (including Ubuntu 24.04) no longer allow `pip` to
+install packages into the system Python, so the easiest approach is to use a
+Python virtual environment. On Ubuntu:
 
 ```
 sudo apt update
-sudo apt install -y python3-pip
+sudo apt install -y python3-venv
 ```
 
 ## Installing
 
-Install Ansible with pip:
+Create a virtual environment and install Ansible into it:
 
 ```
-pip3 install ansible jmespath
+python3 -m venv ~/ansible-venv
+source ~/ansible-venv/bin/activate
+pip install ansible jmespath
 ```
 
 This command also installs the `jmespath` Python module, which is needed
 for some JSON query processing done as part of the Kubernetes cluster
 initialization.
 
+Remember to run `source ~/ansible-venv/bin/activate` in each new shell before
+running `ansible-playbook` or `vagrant up`, as Vagrant runs Ansible from your
+`PATH`.
+
 If you already use Ansible and have it installed, note that these examples
-were tested with Ansible 2.10.6. They are unlikely to work with any version
-of Ansible prior to 2.10.
+were updated for Ansible 12 or later (`ansible-core` 2.19 or later), and
+require at least `ansible-core` 2.17.
 
-You can choose to run `sudo` in front of `pip3` commands to install for all
-users, but be consistent or Ansible may have problems finding the Python
-modules you install.
-
-Also, if you installed Ansible as a regular user, you may need to add
-`$HOME/.local/bin` to your `PATH` in order to be able to run Ansible
-commands.
+The virtual machines run Ubuntu 24.04 and Kubernetes 1.34.
 
 ## Amazon Web Services
 
@@ -67,8 +68,8 @@ configuration needs:
 
 ```
 ansible-galaxy collection install -r collections/requirements.yaml
-pip3 install -r requirements.txt
-pip3 install -r collections/ansible_collections/amazon/aws/requirements.txt
+pip install -r requirements.txt
+pip install -r collections/ansible_collections/amazon/aws/requirements.txt
 ```
 
 You will also need to configure AWS (e.g. using `aws configure`) per the
@@ -179,3 +180,20 @@ installed and set up per the instructions above, you can simply run
 `vagrant up` in any directory with a `Vagrantfile`. This will automatically
 apply the primary automation for that chapter. See the `README.md` file in
 each chapter for more information.
+
+The `Vagrantfile` for each chapter uses the `bento/ubuntu-24.04` box, which
+is available for VirtualBox on both `amd64` and `arm64` hosts. Vagrant
+downloads it automatically the first time you run `vagrant up`.
+
+**NOTE for WSL** If you run Vagrant inside WSL with VirtualBox installed in
+Windows, follow the [Vagrant WSL instructions][vagrant-wsl]: set
+`VAGRANT_WSL_ENABLE_WINDOWS_ACCESS=1`, add the VirtualBox install directory to
+your `PATH`, and run `vagrant up` from a directory on the Windows filesystem
+(e.g. under `/mnt/c`). With WSL 2, enable mirrored networking
+(`networkingMode=mirrored` in `%UserProfile%\.wslconfig`) so that WSL can reach
+the VirtualBox VMs, and enable file permissions on Windows drives
+(`options = "metadata,umask=22,fmask=11"` under `[automount]` in
+`/etc/wsl.conf`); otherwise Ansible ignores the chapter's `ansible.cfg` and SSH
+rejects the Vagrant private keys as too open.
+
+[vagrant-wsl]:https://developer.hashicorp.com/vagrant/docs/other/wsl

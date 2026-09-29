@@ -16,9 +16,9 @@ setup() {
   assert_output --partial stress
   assert_output --partial Running
   run -0 /bin/sh -ec "\
-    cd /sys/fs/cgroup/cpu/pod.slice/crio-${CCL_ID}.scope
-    cat cpu.cfs_quota_us"
-  assert_output --partial '10000'
+    find /sys/fs/cgroup/pod.slice -path '*crio-${CCL_ID}.scope*' \
+      -name cpu.max -exec cat {} +"
+  assert_output --partial '10000 100000'
 }
 
 teardown() {

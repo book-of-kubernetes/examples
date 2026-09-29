@@ -9,9 +9,14 @@ k8s_prometheus: false
 k8s_postgresql_operator: none
 k8s_postgresql_operator_namespace: default
 
-k8s_version: 1.28.0
-calico_version: 3.27.2
-k8s_longhorn_version: 1.6.0
-metrics_server_version: 0.7.0
-ingress_version: 1.10.0
-k8s_prometheus_version: "0.10"
+k8s_version: 1.34.12
+k8s_minor_version: "{{ k8s_version.split('.')[0:2] | join('.') }}"
+calico_version: 3.31.7
+k8s_longhorn_version: 1.12.1
+metrics_server_version: 0.8.1
+ingress_version: 1.15.1
+k8s_prometheus_version: "0.18"
+k8s_kube_vip_version: v1.2.4
+# Newer clients require Python packages newer than the Debian-installed ones
+# in Ubuntu 24.04 (e.g. PyYAML), which pip cannot uninstall
+k8s_python_client_version: 34.1.0

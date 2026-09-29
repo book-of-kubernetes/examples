@@ -1,2 +1,4 @@
 ---
 containerd_cri: false
+containerd_version: "2.1"
+containerd_pause_image: registry.k8s.io/pause:3.10.1

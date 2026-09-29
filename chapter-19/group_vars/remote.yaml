@@ -12,4 +12,4 @@ k8s_allow_scheduling_masters: true
 # NOTE: In a production system, you should keep these in an encrypted store
 #       such as Ansible Vault.
 k8s_join_token: 1d8fb1.2875d52d62a3282d
-k8s_certificate_key: 5a7e07816958efb97635e9a66256adb1
+k8s_certificate_key: 841741a9a11027f43e7b1eadffc8d11e23b0c0945f28fa79eb4074a55e22ad76

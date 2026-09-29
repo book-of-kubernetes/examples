@@ -8,7 +8,7 @@ groups = {
 }
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/focal64"
+  config.vm.box = "bento/ubuntu-24.04"
   cluster.each do |name, data|
     config.vm.define name do |host|
       host.vm.hostname = name

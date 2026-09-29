@@ -5,28 +5,56 @@
     update_cache: yes
 
 - name: gpg key
-  ansible.builtin.apt_key:
+  ansible.builtin.get_url:
     url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
 
 - name: repository
-  ansible.builtin.apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu focal stable
-    state: present
-    filename: docker
+  ansible.builtin.deb822_repository:
+    name: docker
+    uris: https://download.docker.com/linux/ubuntu
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: stable
+    signed_by: /etc/apt/keyrings/docker.asc
+    install_python_debian: true
 
 - name: install
   ansible.builtin.apt:
-    name: containerd.io
+    name: containerd.io={{ containerd_version }}.*
     update_cache: yes
 
+- name: check for cri config
+  ansible.builtin.command: grep -q SystemdCgroup /etc/containerd/config.toml
+  register: containerd_cri_config
+  changed_when: false
+  failed_when: false
+  when: containerd_cri
+
 - name: enable cri
-  ansible.builtin.lineinfile:
+  ansible.builtin.shell: containerd config default > /etc/containerd/config.toml
+  when:
+    - containerd_cri
+    - containerd_cri_config.rc != 0
+  notify:
+    - restart containerd
+
+- name: systemd cgroup driver
+  ansible.builtin.replace:
     path: /etc/containerd/config.toml
-    regexp: '^disabled_plugins'
-    line: "disabled_plugins = []"
+    regexp: 'SystemdCgroup = false'
+    replace: 'SystemdCgroup = true'
   when: containerd_cri
   notify:
     - restart containerd
-  
+
+- name: pause image
+  ansible.builtin.replace:
+    path: /etc/containerd/config.toml
+    regexp: '^(\s*sandbox(_image)? = ).*$'
+    replace: '\g<1>"{{ containerd_pause_image }}"'
+  when: containerd_cri
+  notify:
+    - restart containerd
+
 - meta: flush_handlers

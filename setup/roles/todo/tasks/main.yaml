@@ -5,8 +5,9 @@
     update_cache: yes
 
 - name: python prerequisites
-  pip:
-    name: openshift
+  ansible.builtin.pip:
+    name: kubernetes==34.1.0
+    break_system_packages: true
 
 - name: manifests directory
   ansible.builtin.file:

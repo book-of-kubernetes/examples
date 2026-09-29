@@ -1,6 +1,6 @@
 ---
 - name: security group
-  amazon.aws.ec2_group:
+  amazon.aws.ec2_security_group:
     name: ansible_k8s
     state: absent
     region: "{{ aws_region }}"
@@ -12,7 +12,7 @@
   register: aws_vpc_output
 
 - name: public route
-  community.aws.ec2_vpc_route_table:
+  amazon.aws.ec2_vpc_route_table:
     vpc_id: "{{ aws_vpc_output['vpcs'][0]['id'] }}"
     region: "{{ aws_region }}"
     lookup: tag
@@ -22,7 +22,7 @@
   when: aws_vpc_output['vpcs']
 
 - name: internet gateway
-  community.aws.ec2_vpc_igw:
+  amazon.aws.ec2_vpc_igw:
     vpc_id: "{{ aws_vpc_output['vpcs'][0]['id'] }}"
     region: "{{ aws_region }}"
     state: absent

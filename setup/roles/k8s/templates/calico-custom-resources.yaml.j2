@@ -6,7 +6,8 @@ spec:
   # Configures Calico networking.
   calicoNetwork:
     ipPools:
-    - blockSize: 26
+    - name: default-ipv4-ippool
+      blockSize: 26
       cidr: {{ k8s_pod_cidr }}
       encapsulation: VXLANCrossSubnet
       natOutgoing: Enabled

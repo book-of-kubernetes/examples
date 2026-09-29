@@ -6,6 +6,26 @@ This folder provides the examples for the chapter "Process Isolation".
 
 Be sure to start by following the instructions in the `setup` folder.
 
+## Ubuntu 24.04 and Kubernetes 1.34 Notes
+
+The CRI-O packages have moved to a new repository, and `apt-key` is no
+longer used on Ubuntu 24.04. The variables in `/opt/crio-ver` are updated
+for the new repository, so install CRI-O and `crictl` with these commands
+instead of the ones in the book:
+
+```
+source /opt/crio-ver
+curl -fsSL $REPO/Release.key -o /etc/apt/keyrings/cri-o.asc
+echo "deb [signed-by=/etc/apt/keyrings/cri-o.asc] $REPO/ /" > /etc/apt/sources.list.d/cri-o.list
+apt update && apt install -y cri-o
+systemctl start crio
+curl -L -o /tmp/crictl.tar.gz $CRICTL_URL
+tar -C /usr/local/bin -xvzf /tmp/crictl.tar.gz
+```
+
+There is no longer a separate `cri-o-runc` package; the low-level runtimes
+(`crun`, the default, and `runc`) are included in the `cri-o` package.
+
 ## Running in AWS
 
 Start by provisioning:

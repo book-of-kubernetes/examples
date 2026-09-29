@@ -175,7 +175,7 @@ items:
                       fieldPath: spec.nodeName
                 - name: INIT_CONTAINER
                   value: 'true'
-              image: 'docker.io/weaveworks/weave-kube:2.8.1'
+              image: 'docker.io/rajchaudhuri/weave-kube:2.9.0'
               readinessProbe:
                 httpGet:
                   host: 127.0.0.1
@@ -204,7 +204,7 @@ items:
                     fieldRef:
                       apiVersion: v1
                       fieldPath: spec.nodeName
-              image: 'docker.io/weaveworks/weave-npc:2.8.1'
+              image: 'docker.io/rajchaudhuri/weave-npc:2.9.0'
               resources:
                 requests:
                   cpu: 50m
@@ -220,7 +220,7 @@ items:
             - name: weave-init
               command:
                 - /home/weave/init.sh
-              image: 'docker.io/weaveworks/weave-kube:2.8.1'
+              image: 'docker.io/rajchaudhuri/weave-kube:2.9.0'
               securityContext:
                 privileged: true
               volumeMounts:

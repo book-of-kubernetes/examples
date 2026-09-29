@@ -1,5 +1,5 @@
 ---
-apiVersion: kubeadm.k8s.io/v1beta3
+apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 bootstrapTokens:
 - groups:
@@ -11,7 +11,8 @@ bootstrapTokens:
   - authentication
 nodeRegistration:
   kubeletExtraArgs:
-    node-ip: {{ k8s_initial_master }}
+  - name: node-ip
+    value: {{ k8s_initial_master }}
 {% if k8s_allow_scheduling_masters %}
   taints: []
 {% endif %}
@@ -19,16 +20,18 @@ localAPIEndpoint:
   advertiseAddress: {{ k8s_initial_master }}
 certificateKey: "{{ k8s_certificate_key }}"
 ---
-apiVersion: kubeadm.k8s.io/v1beta3
+apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
 kubernetesVersion: {{ k8s_version }}
 apiServer:
   extraArgs:
-    service-node-port-range: 80-32767
+  - name: service-node-port-range
+    value: 80-32767
 networking:
   podSubnet: "{{ k8s_pod_cidr }}"
 controlPlaneEndpoint: "{{ k8s_control_plane_endpoint }}:6443"
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
+cgroupDriver: systemd
 serverTLSBootstrap: true

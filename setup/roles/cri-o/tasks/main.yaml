@@ -1,26 +1,21 @@
 ---
 - name: gpg key
-  ansible.builtin.apt_key:
-    url: "{{ crio_repo }}/{{ crio_os }}/Release.key"
-    state: present
-
-- name: kubic repository
-  ansible.builtin.apt_repository:
-    repo: "deb {{ crio_repo }}/{{ crio_os }}/ /"
-    state: present
-    filename: kubic
+  ansible.builtin.get_url:
+    url: "{{ crio_repo }}/Release.key"
+    dest: /etc/apt/keyrings/cri-o.asc
+    mode: '0644'
 
 - name: cri-o repository
-  ansible.builtin.apt_repository:
-    repo: "deb {{ crio_repo }}:/cri-o:/{{ crio_version }}/{{ crio_os }}/ /"
-    state: present
-    filename: kubic.cri-o
+  ansible.builtin.deb822_repository:
+    name: cri-o
+    uris: "{{ crio_repo }}/"
+    suites: /
+    signed_by: /etc/apt/keyrings/cri-o.asc
+    install_python_debian: true
 
 - name: install
   ansible.builtin.apt:
-    name:
-      - cri-o
-      - cri-o-runc
+    name: cri-o
     update_cache: yes
 
 - name: skopeo
@@ -34,11 +29,25 @@
     state: started
     enabled: yes
 
+- name: cni plugins directory
+  ansible.builtin.file:
+    path: /opt/cni/bin
+    state: directory
+    mode: '0755'
+  when: crio_cni
+
 - name: cni plugins
   ansible.builtin.unarchive:
     src: "{{ cni_plugin_url }}"
     dest: /opt/cni/bin
     remote_src: yes
+  when: crio_cni
+
+- name: cni config directory
+  ansible.builtin.file:
+    path: /etc/cni/net.d
+    state: directory
+    mode: '0755'
   when: crio_cni
 
 - name: cni config

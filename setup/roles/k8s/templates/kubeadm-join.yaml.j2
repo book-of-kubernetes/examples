@@ -1,18 +1,20 @@
-apiVersion: kubeadm.k8s.io/v1beta3
+apiVersion: kubeadm.k8s.io/v1beta4
 kind: JoinConfiguration
 discovery:
   bootstrapToken:
     apiServerEndpoint: {{ k8s_control_plane_endpoint }}:6443
     token: {{ k8s_join_token }}
     unsafeSkipCAVerification: true
-  timeout: 5m0s
+timeouts:
+  discovery: 5m0s
 nodeRegistration:
   kubeletExtraArgs:
-    node-ip: {{ ansible_facts['all_ipv4_addresses'] | intersect(k8s_cluster_ips) | join('') }}
+  - name: node-ip
+    value: {{ ansible_facts['all_ipv4_addresses'] | intersect(k8s_cluster_ips) | join('') }}
 {% if k8s_allow_scheduling_masters %}
   taints: []
 {% endif %}
-{% if k8s_kube_vip %}  
+{% if k8s_kube_vip %}
   ignorePreflightErrors:
     - DirAvailable--etc-kubernetes-manifests
 {% endif %}

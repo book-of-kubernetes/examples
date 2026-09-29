@@ -33,14 +33,14 @@
   register: aws_subnet_output
 
 - name: internet gateway
-  community.aws.ec2_vpc_igw:
+  amazon.aws.ec2_vpc_igw:
     vpc_id: "{{ aws_vpc_output['vpc']['id'] }}"
     region: "{{ aws_region }}"
     state: present
   register: aws_igw_output
 
 - name: public route
-  community.aws.ec2_vpc_route_table:
+  amazon.aws.ec2_vpc_route_table:
     vpc_id: "{{ aws_vpc_output['vpc']['id'] }}"
     region: "{{ aws_region }}"
     tags:
@@ -52,7 +52,7 @@
         gateway_id: "{{ aws_igw_output['gateway_id'] }}"
 
 - name: security group
-  amazon.aws.ec2_group:
+  amazon.aws.ec2_security_group:
     name: ansible_k8s
     description: "Ansible K8S Security Group"
     region: "{{ aws_region }}"
@@ -98,12 +98,12 @@
   when: ec2_ami_facts_result['images'] | length == 0
 
 - name: instances
-  community.aws.ec2_instance:
+  amazon.aws.ec2_instance:
     region: "{{ aws_region }}"
     name: "{{ item.key }}"
     key_name: "{{ aws_key }}"
     instance_type: "{{ item.value.instance_type }}"
-    image_id: "{{ ec2_ami_facts_result['images'][0]['image_id'] }}"
+    image_id: "{{ (ec2_ami_facts_result['images'] | sort(attribute='creation_date') | last)['image_id'] }}"
     wait: yes
     wait_timeout: 30
     vpc_subnet_id: "{{ aws_subnet_output['subnet']['id'] }}"

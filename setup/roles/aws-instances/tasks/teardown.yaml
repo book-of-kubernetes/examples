@@ -1,6 +1,6 @@
 ---
 - name: terminate instances
-  community.aws.ec2_instance:
+  amazon.aws.ec2_instance:
     region: "{{ aws_region }}"
     state: absent
     filters:
