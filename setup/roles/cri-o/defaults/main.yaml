@@ -1,7 +1,7 @@
 ---
-crio_version: "1.20"
-crio_os: xUbuntu_20.04
-crio_repo: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable
+crio_version: "v1.37"
+crio_os: deb
+crio_repo: https://download.opensuse.org/repositories/isv:/cri-o:/stable
 crio_skopeo: false
 crio_cni: false
 cni_plugin_version: v0.9.1
