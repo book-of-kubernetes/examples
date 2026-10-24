@@ -1,18 +1,18 @@
 ---
 - name: gpg key
   ansible.builtin.apt_key:
-    url: "{{ crio_repo }}/{{ crio_os }}/Release.key"
+    url: "{{ crio_repo }}:/{{ crio_version }}/{{ crio_os }}/Release.key"
     state: present
 
 - name: kubic repository
   ansible.builtin.apt_repository:
-    repo: "deb {{ crio_repo }}/{{ crio_os }}/ /"
+    repo: "deb {{ crio_repo }}:/{{ crio_version }}/{{ crio_os }}/ /"
     state: present
     filename: kubic
 
 - name: cri-o repository
   ansible.builtin.apt_repository:
-    repo: "deb {{ crio_repo }}:/cri-o:/{{ crio_version }}/{{ crio_os }}/ /"
+    repo: "deb {{ crio_repo }}:/{{ crio_version }}/{{ crio_os }}/ /"
     state: present
     filename: kubic.cri-o
 
@@ -20,7 +20,6 @@
   ansible.builtin.apt:
     name:
       - cri-o
-      - cri-o-runc
     update_cache: yes
 
 - name: skopeo
